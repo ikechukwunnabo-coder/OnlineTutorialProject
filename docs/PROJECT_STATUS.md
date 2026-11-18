@@ -1,7 +1,7 @@
 # Project Status — Ben Digital Solution
 
 **Last updated:** 2026-11-18
-**Current phase:** Phase 7 - R1 hardening and production deployment (local evidence complete; CI passed; gate NOT PASSED)
+**Current phase:** Phase 7 - R1 hardening and production deployment (local evidence complete, including the `/console` editorial workflow; CI passed on an earlier commit; gate NOT PASSED)
 **Next phase:** Owner decision on remaining R1 blockers and exceptions
 **Tooling mode:** Agentic (files and commands executable in this workspace)
 **Web access:** Yes (version checks performed 2026-11-12)
@@ -20,7 +20,7 @@ This is the single living status document. Phase completion records are appended
 | Team | Solo developer |
 | Monthly infrastructure budget | Low — one small VPS plus free-tier monitoring |
 | Content language(s) | English only; i18n out of scope but URLs and models must not preclude it |
-| Content source | Owner writes lessons in Django admin; no scraping or third-party copying |
+| Content source | Owner writes lessons in Django admin or `/console`; no scraping or third-party copying |
 | Content licence | All rights reserved by the site owner |
 | Monetisation | None in scope (no ads, payments, paywalls) |
 | Email provider | Transactional email via SMTP/API configured by environment variables |
@@ -41,7 +41,7 @@ This is the single living status document. Phase completion records are appended
 | 4 — Backend authentication and accounts | Complete (approved 2026-11-15) | 13 auth/account endpoints, 131 tests at 93.61% coverage on SQLite and 93.34% on PostgreSQL 17.0, OpenAPI validation, session/CSRF/throttle tests |
 | 5 — Frontend foundation, public pages, and auth screens | Complete (awaiting approval) | Next.js 16.4.6 app, typed API client, public pages, auth screens/session restoration, 18 Vitest tests, lint/typecheck/build gates, live dev proxy checks |
 | 6 - Frontend learner features and E2E | Complete (advanced 2026-11-18) | Learner bookmark/progress UI, dashboard, Playwright R1 suite (17 passed, 1 opt-in skipped), axe 9/9, production build 49 pages, live revalidation webhook verified, backend 133 tests at 93.43% |
-| 7 - R1 hardening and production deployment | In progress - gate NOT PASSED | Production assets and local checks complete; AC-30 implemented; 24/32 criteria pass, 7 partial, 1 fail (AC-21); CI passed on GitHub Actions; Docker/PG18.7/Redis8.4.8/live email unexecuted. See `docs/R1_GATE.md` |
+| 7 - R1 hardening and production deployment | In progress - gate NOT PASSED | Production assets, AC-30, and the `/console` editorial workflow are complete locally; 24/32 criteria pass, 7 partial, 1 fail (AC-21); CI passed on an earlier commit; Docker/PG18.7/Redis8.4.8/live email unexecuted. See `docs/R1_GATE.md` |
 | 8a–8d — R2 build | Not started (blocked until R1 live) | — |
 | 9 — R2 release gate | Not started | — |
 | 10 — R3 build | Not started (blocked until R2 live) | — |
@@ -63,6 +63,7 @@ All Phase 1 decisions are recorded as numbered ADRs under `docs/decisions/` (ind
 | ADR-0008 | TypeScript 7 adoption | TypeScript 5.9.x for R1; TypeScript 7 deferred until verified with Next.js 16.4.x | Accepted |
 | ADR-0009 | Deployment topology | Single domain; Nginx routes `/api/` and `/admin/` to Django, `/` to Next.js; no CORS in production | Accepted |
 | ADR-0010 | API versioning and errors | `/api/v1/`, consistent error envelope with stable codes and request IDs, documented deprecation policy | Accepted |
+| ADR-0011 | Next.js editorial console | Role-gated `/console` content CRUD over the console API; Django admin retained for users/settings/media; ADR-0009 routing extended with `/console/*` | Accepted |
 
 Phase 0 open items now closed: Redis inclusion (ADR-0002), Celery timing (ADR-0003), hierarchy (ADR-0004), revision strategy (ADR-0006), demo flag (ADR-0007). TypeScript selection was decided early in ADR-0008; the exact 5.9.x patch is pinned in Phase 5.
 
@@ -70,7 +71,7 @@ Phase 0 open items now closed: Redis inclusion (ADR-0002), Celery timing (ADR-00
 
 ### 4.1 Vision
 
-Ben Digital Solution is a fast, accessible, content-first programming education platform for absolute beginners. Learners discover structured tutorials by subject, read carefully written lessons with working code examples, and track their own progress. The owner publishes and maintains all material through Django admin without code changes. The platform is built to earn search traffic on public content and to remain operable by one person on a small budget.
+Ben Digital Solution is a fast, accessible, content-first programming education platform for absolute beginners. Learners discover structured tutorials by subject, read carefully written lessons with working code examples, and track their own progress. The owner publishes and maintains all material through the Next.js `/console` workspace or Django admin without code changes. The platform is built to earn search traffic on public content and to remain operable by one person on a small budget.
 
 ### 4.2 Product principles
 
@@ -98,7 +99,7 @@ Ben Digital Solution is a fast, accessible, content-first programming education 
 
 **P2 — Sam, the self-directed learner (secondary).** Has some familiarity with computers but no formal training. Compares tutorials and wants search, bookmarks, and a reliable table of contents. Studies in short sessions.
 
-**P3 — The owner/editor (operations).** Solo administrator who writes lessons, publishes them, fixes errata, and monitors the site. Needs a dependable admin workflow, safe Markdown rendering, and auditability.
+**P3 — The owner/editor (operations).** Solo administrator who writes lessons, publishes them, fixes errata, and monitors the site. Needs a dependable `/console` editorial workflow, safe Markdown rendering, and auditability; Django admin remains the recovery and system-administration path.
 
 ### 5.2 Primary journeys (R1)
 
@@ -116,7 +117,7 @@ Ben Digital Solution is a fast, accessible, content-first programming education 
 
 **J7 — Contact the owner.** Contact form → validated, throttled, stored, emailed with header-injection protection.
 
-**J8 — Publish content.** Owner drafts Markdown in admin → previews → publishes → sitemap and metadata update → old slug URL 301s if changed.
+**J8 — Publish content.** Owner drafts Markdown in `/console` or Django admin → previews → publishes → sitemap and metadata update → old slug URL 301s if changed.
 
 ## 6. Requirements
 
@@ -142,8 +143,8 @@ Tags: `[R1]` MVP, `[R2]` learning and community, `[R3]` growth and analytics. Un
 | F-14 | Self-service account deactivation and deletion, documented policy | R1 |
 | F-15 | Bookmarks: add and remove, list on the learner page | R1 |
 | F-16 | Chapter completion, reading position, and per-tutorial progress | R1 |
-| F-17 | Django admin for content CRUD and publication states | R1 |
-| F-18 | Django admin for users and roles (Admin, Editor); audit log for administrative actions | R1 |
+| F-17 | Next.js `/console` and Django admin for content CRUD and publication states | R1 |
+| F-18 | Django admin for users and roles (Admin, Editor); role-gated console access and audit log for administrative actions | R1 |
 | F-19 | Unique title, meta description, canonical URL, Open Graph, and accurate JSON-LD for public pages | R1 |
 | F-20 | XML sitemap generated from published content; robots.txt; no indexing of auth, dashboard, drafts, or internal search URLs | R1 |
 | F-21 | 301 slug redirects when published slugs change; no redirect loops or duplicate canonicals | R1 |
@@ -222,7 +223,7 @@ Traceability: every R1 functional requirement (F-01–F-28) and every R1 non-fun
 | AC-25 | CI runs lint, type checks, backend and frontend tests, production builds, dependency audits, and OpenAPI validation on every pull request. | GitHub Actions run `44268233115` |
 | AC-26 | At least 20 real published chapters across at least 5 tutorials and 4 categories pass the content checklist. | Content audit |
 | AC-27 | No secrets, credentials, or production data are present in the repository or images. | Secret scan + review |
-| AC-28 | An administrator can create, edit, publish, unpublish, and archive categories, tutorials, chapters, and code examples; role permissions are enforced on the backend; administrative actions are recorded in the audit log. | Admin/API permission tests |
+| AC-28 | An administrator can create, edit, publish, unpublish, and archive categories, tutorials, chapters, and code examples through Django admin or `/console`; role permissions are enforced on the backend; administrative actions are recorded in the audit log. | Admin/console API permission and audit-log tests |
 | AC-29 | The seed command creates clearly marked demo categories, tutorials, and chapters, is safe to re-run, and demo content is excluded from the sitemap and launch content counts. | Management command test |
 | AC-30 | Image uploads require alt text and reject disallowed types and oversized files; video embeds accept only allowlisted YouTube/Vimeo URLs and reject arbitrary iframes. | Validation and security tests |
 | AC-31 | Error tracking is configurable by environment and disabled without a DSN; application logs contain no secrets or unnecessary personal data. | Configuration review + log inspection |
@@ -1339,3 +1340,83 @@ Prepare the R1 production deployment: single-domain Nginx/TLS topology, producti
 6. Decide whether to proceed to R2 after the owner accepts the remaining R1 exceptions.
 
 **Reply `revise: <feedback>` with the missing environment access or exception decisions, or `status` for the current evidence summary.**
+
+---
+
+## 24. Phase 7 follow-up — editorial console (2026-11-18)
+
+### 24.1 Delivered items
+
+1. Added a protected Next.js `/console` shell with active navigation and role-based access for `editor`, `moderator`, and `admin`.
+2. Added the console overview dashboard backed by `GET /api/v1/admin/overview/`.
+3. Added six console CRUD endpoints for categories, tutorials, and chapters under `/api/v1/admin/content/`.
+4. Added console content ledger and six new/edit pages: category, tutorial, and chapter create/update flows.
+5. Enforced write permissions in DRF: console roles may read, `editor`/`admin` may create and update, and only `admin` may delete or change publication fields.
+6. Generated slugs from source names/titles, kept model `full_clean()` rules active, auto-stamped `published_at`, and required at least one published chapter before a tutorial can publish.
+7. Recorded each console create/update/delete in `AdministrativeAuditLog`.
+8. Kept Django admin for users, roles, settings, media, audit history, and recovery; `/admin/*` remains routed to Django per ADR-0009.
+
+### 24.2 Files created or modified
+
+| Action | Path |
+|---|---|
+| Modified | `backend/apps/common/permissions.py`, `backend/apps/common/serializers.py`, `backend/apps/common/views.py`, `backend/apps/common/urls.py` |
+| Modified | `backend/apps/catalog/serializers.py` |
+| Created | `backend/apps/common/tests/test_console.py`, `backend/apps/common/tests/test_console_content.py` |
+| Modified | `frontend/src/lib/api/types.ts`, `frontend/src/lib/api/server.ts`, `frontend/src/lib/api/browser.ts`, `frontend/src/lib/console.ts`, `frontend/src/lib/console.test.ts` |
+| Modified | `frontend/src/lib/format.ts`, `frontend/src/lib/format.test.ts`, `frontend/src/app/robots.ts`, `frontend/src/components/account-nav.tsx` |
+| Created | `frontend/src/app/(console)/console/` pages and `frontend/src/components/console/` components |
+| Created | `docs/decisions/0011-nextjs-editorial-console.md` |
+| Modified | `README.md`, `docs/ARCHITECTURE.md`, `docs/API_CONTRACT.md`, `docs/TEST_STRATEGY.md`, `docs/R1_GATE.md`, `docs/RUNBOOK.md`, `docs/CONTENT_PLAN.md`, `docs/RISK_REGISTER.md`, `docs/decisions/README.md`, `docs/decisions/0009-single-domain-topology.md`, `docs/PROJECT_STATUS.md` |
+
+### 24.3 Decisions and reasons
+
+| Decision | Reason |
+|---|---|
+| Add `/console` instead of moving Django admin | Single-domain routing already reserves `/admin/*` for Django; a Next.js console avoids changing the production reverse proxy (ADR-0009, ADR-0011) |
+| Role checks on both client and server | Frontend guards provide UX; DRF permissions provide the security boundary |
+| Admin-only publication and delete | Matches the existing Django admin publication model and keeps destructive actions with the owner |
+| Reuse `AdministrativeAuditLog` | Preserves the R1 revision/audit approach without introducing R2 `ContentRevision` storage (ADR-0006) |
+| Generated slugs and model validation | Prevents client-only invariants and preserves catalog uniqueness/reserved-slug rules |
+
+### 24.4 Commands run and actual outcomes
+
+| Command | Outcome |
+|---|---|
+| `ruff check .`, `ruff format --check .` | All checks passed; 111 files already formatted |
+| `mypy .` | Success: no issues in 80 source files |
+| `pytest -q` | **176 passed**; **93.37%** application coverage |
+| `pytest -q --no-cov apps/common/tests/test_console.py apps/common/tests/test_console_content.py` | **14 passed** |
+| `tsc --noEmit` | Clean after replacing zod `coerce.number()` schemas with typed numeric fields and `setValueAs` |
+| `eslint .` | Clean after removing render-time ref access from console forms |
+| Vitest | **26 passed in 8 files** |
+| `next build` | Passed; route table includes console overview, content ledger, and six content new/edit routes |
+| Live API smoke | Admin session: overview and content lists `200`; unauth content list `401`; health `200` |
+| Live page smoke | Admin session: `/console/content` and `/console/content/categories/new` `200`; unauth `/console/content` returned the client-side login redirect shell |
+
+### 24.5 Tests run and actual outcomes
+
+- Backend suite increased from 162 to 176 tests; coverage increased from 93.28% to 93.37%.
+- Console tests cover overview roles, CRUD roles, generated slugs, editor publication-field restrictions, tutorial publish guard, model validation, and audit-log entries.
+- Frontend suite increased from 20 to 26 tests; new tests cover console access, edit, and management role helpers plus date-time formatting.
+- Production build compiled and generated the console routes after the form typing and lint fixes.
+- Temporary verification sessions were deleted after smoke testing.
+
+### 24.6 Known limitations and risks
+
+- The R1 gate remains **NOT PASSED**: AC-21 fails and seven criteria are partial; no production deployment has been claimed.
+- GitHub Actions run `44268233115` predates the console follow-up; console code was verified locally only.
+- Console role routing and CRUD on the production Compose/Nginx stack are untested.
+- Django admin remains necessary for user roles, settings, media, and audit history; `/console` is not a full replacement.
+- Frontend Sentry, p75 LCP, live email, PostgreSQL 18.7, Redis 8.4.8, and manual accessibility/visual review remain unchanged blockers.
+
+### 24.7 Changes to previously agreed architecture
+
+- ADR-0009 routing table now names `/console/*` as a Next.js route; Django still owns `/admin/*` and `/api/v1/*`.
+- ADR-0011 records the editorial console decision and its role/audit boundaries.
+- Moderator is now a read-only console role in R1; R2 comment moderation remains unchanged.
+- No new public content endpoint, no CORS, and no separate authentication system were introduced.
+
+### 24.8 Next action
+
+Commit and push the console follow-up, then rerun CI on the new commit before requesting any further owner decision about the remaining R1 exceptions.

@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { difficultyLabel, formatCount, formatDate, formatReadingTime } from "./format";
+import {
+  difficultyLabel,
+  formatCount,
+  formatDate,
+  formatDateTime,
+  formatReadingTime,
+} from "./format";
 
 describe("format helpers", () => {
   it("formats dates in UTC", () => {
@@ -9,6 +15,16 @@ describe("format helpers", () => {
 
   it("handles invalid dates", () => {
     expect(formatDate("not-a-date")).toBe("Date unavailable");
+  });
+
+  it("formats date times in UTC", () => {
+    const result = formatDateTime("2026-01-15T23:30:00Z");
+    expect(result).toContain("Jan 15, 2026");
+    expect(result).toContain("23:30");
+  });
+
+  it("handles invalid date times", () => {
+    expect(formatDateTime("not-a-date")).toBe("Time unavailable");
   });
 
   it("never shows less than one minute of reading time", () => {

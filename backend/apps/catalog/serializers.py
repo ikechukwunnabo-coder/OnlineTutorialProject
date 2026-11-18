@@ -2,8 +2,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.utils import timezone
+from django.utils.text import slugify
 from rest_framework import serializers
 
+from apps.accounts.models import User
+from apps.common.choices import PublicationStatus
 from apps.common.markdown import render_markdown
 
 from .models import Category, Chapter, ChapterImage, CodeExample, Tag, Tutorial, VideoEmbed
@@ -282,3 +287,231 @@ class RedirectSerializer(serializers.Serializer):
 
 class RedirectResponseSerializer(serializers.Serializer):
     redirect = RedirectSerializer()
+
+
+def _is_console_admin(serializer: serializers.Serializer) -> bool:
+    user = serializer.context.get("request").user if serializer.context.get("request") else None
+    return bool(
+        user and getattr(user, "is_authenticated", False) and getattr(user, "role", "") == "admin"
+    )
+
+
+def _clean_model(instance) -> None:
+    try:
+        instance.full_clean()
+    except DjangoValidationError as error:
+        details = error.message_dict or {"non_field_errors": error.messages}
+        raise serializers.ValidationError(details) from error
+
+
+def _slug_value(value: str, max_length: int) -> str:
+    return slugify(value)[:max_length]
+
+
+class ConsoleModelWriteMixin(serializers.Serializer):
+    instance: Any
+    Meta: Any
+    restricted_fields = ("status", "published_at", "is_demo")
+
+    def get_fields(self):
+        fields = super().get_fields()
+        if not _is_console_admin(self):
+            for name in self.restricted_fields:
+                if name in fields:
+                    fields[name].read_only = True
+        return fields
+
+    def _set_slug(self, attrs: dict[str, Any], source_field: str, max_length: int) -> None:
+        if "slug" in attrs or (self.instance is None and source_field in attrs):
+            source = attrs.get(source_field)
+            if source:
+                attrs["slug"] = _slug_value(str(source), max_length)
+
+    def _set_published_at(self, attrs: dict[str, Any]) -> None:
+        if attrs.get("status") == PublicationStatus.PUBLISHED:
+            current = getattr(self.instance, "published_at", None)
+            if not attrs.get("published_at") and not current:
+                attrs["published_at"] = timezone.now()
+
+    def _pop_many_to_many(self, validated_data: dict[str, Any]) -> dict[str, Any]:
+        return {
+            field.name: validated_data.pop(field.name)
+            for field in self.Meta.model._meta.many_to_many
+            if field.name in validated_data
+        }
+
+    def _save_instance(self, instance, many_to_many: dict[str, Any]):
+        _clean_model(instance)
+        instance.save()
+        for name, value in many_to_many.items():
+            getattr(instance, name).set(value)
+        return instance
+
+    def create(self, validated_data: dict[str, Any]):
+        many_to_many = self._pop_many_to_many(validated_data)
+        instance = self.Meta.model(**validated_data)
+        return self._save_instance(instance, many_to_many)
+
+    def update(self, instance, validated_data: dict[str, Any]):
+        many_to_many = self._pop_many_to_many(validated_data)
+        for name, value in validated_data.items():
+            setattr(instance, name, value)
+        return self._save_instance(instance, many_to_many)
+
+
+class ConsoleCategoryReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = (
+            "id",
+            "name",
+            "slug",
+            "description",
+            "icon",
+            "display_order",
+            "status",
+            "is_demo",
+            "updated_at",
+        )
+
+
+class ConsoleCategoryWriteSerializer(ConsoleModelWriteMixin, serializers.ModelSerializer):
+    slug = serializers.SlugField(required=False, allow_blank=True)
+
+    class Meta:
+        model = Category
+        fields = (
+            "name",
+            "slug",
+            "description",
+            "icon",
+            "display_order",
+            "status",
+            "is_demo",
+        )
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        attrs = super().validate(attrs)
+        self._set_slug(attrs, "name", 120)
+        return attrs
+
+
+class ConsoleCategoryRefSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ("id", "name", "slug")
+
+
+class ConsoleAuthorRefSerializer(serializers.ModelSerializer):
+    display_name = serializers.CharField(source="get_full_name", read_only=True)
+
+    class Meta:
+        model = User
+        fields = ("id", "email", "display_name")
+
+
+class ConsoleTutorialReadSerializer(serializers.ModelSerializer):
+    category = ConsoleCategoryRefSerializer(read_only=True)
+    author = ConsoleAuthorRefSerializer(read_only=True)
+    tags = TagSummarySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Tutorial
+        fields = (
+            "id",
+            "title",
+            "slug",
+            "summary",
+            "category",
+            "author",
+            "difficulty",
+            "estimated_reading_time",
+            "status",
+            "is_demo",
+            "tags",
+            "published_at",
+            "updated_at",
+        )
+
+
+class ConsoleTutorialWriteSerializer(ConsoleModelWriteMixin, serializers.ModelSerializer):
+    slug = serializers.SlugField(required=False, allow_blank=True)
+    author = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Tutorial
+        fields = (
+            "category",
+            "author",
+            "title",
+            "slug",
+            "summary",
+            "difficulty",
+            "tags",
+            "status",
+            "published_at",
+            "is_demo",
+        )
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        attrs = super().validate(attrs)
+        self._set_slug(attrs, "title", 160)
+        self._set_published_at(attrs)
+        if attrs.get("status") == PublicationStatus.PUBLISHED:
+            if (
+                self.instance is None
+                or not self.instance.chapters.filter(status=PublicationStatus.PUBLISHED).exists()
+            ):
+                raise serializers.ValidationError(
+                    {"status": "Publish at least one chapter before publishing the tutorial."}
+                )
+        return attrs
+
+
+class ConsoleChapterReadSerializer(serializers.ModelSerializer):
+    tutorial = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Chapter
+        fields = (
+            "id",
+            "tutorial",
+            "title",
+            "slug",
+            "summary",
+            "content",
+            "order",
+            "estimated_reading_time",
+            "status",
+            "is_demo",
+            "published_at",
+            "updated_at",
+        )
+
+    def get_tutorial(self, obj: Chapter) -> dict[str, Any]:
+        return {"id": obj.tutorial_id, "title": obj.tutorial.title, "slug": obj.tutorial.slug}
+
+
+class ConsoleChapterWriteSerializer(ConsoleModelWriteMixin, serializers.ModelSerializer):
+    slug = serializers.SlugField(required=False, allow_blank=True)
+
+    class Meta:
+        model = Chapter
+        fields = (
+            "tutorial",
+            "title",
+            "slug",
+            "summary",
+            "content",
+            "order",
+            "status",
+            "published_at",
+            "is_demo",
+        )
+        validators: list[Any] = []
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        attrs = super().validate(attrs)
+        self._set_slug(attrs, "title", 160)
+        self._set_published_at(attrs)
+        return attrs

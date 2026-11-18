@@ -13,6 +13,22 @@ export function formatDate(value: string): string {
   }).format(date);
 }
 
+export function formatDateTime(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Time unavailable";
+  }
+  return new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "UTC",
+  }).format(date);
+}
+
 export function formatReadingTime(minutes: number): string {
   return `${Math.max(1, Math.round(minutes))} min read`;
 }

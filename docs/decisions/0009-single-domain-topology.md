@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-13
-- **Related:** ADR-0001 (auth), ADR-0005 (rendering), ARCHITECTURE.md deployment
+- **Related:** ADR-0001 (auth), ADR-0005 (rendering), ADR-0011 (editorial console), ARCHITECTURE.md deployment
 
 ## Context
 
@@ -18,6 +18,7 @@ Nginx routes:
 |---|---|
 | `/api/v1/*` | Django (Gunicorn) |
 | `/admin/*` | Django (Gunicorn) |
+| `/console/*` | Next.js (editorial console) |
 | `/static/*` | Nginx static volume (Django admin/DRF assets) |
 | `/media/*` | Nginx media volume (uploads) |
 | `/_next/static/*` | Next.js with immutable caching |

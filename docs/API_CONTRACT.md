@@ -3,7 +3,7 @@
 **Version:** 1.0 (Phase 1)
 **Date:** 2026-11-13
 **Base URL:** `/api/v1`
-**Status:** Contract for Phase 2–4 implementation. No endpoint is implemented in Phase 1.
+**Status:** Contract for Phase 2–4 implementation; editorial console endpoints added in the Phase 7 follow-up on 2026-11-18. No endpoint was implemented in Phase 1.
 
 Conventions in [ADR-0010](decisions/0010-api-versioning-and-errors.md) and [ARCHITECTURE.md](ARCHITECTURE.md) §9 apply to every endpoint.
 
@@ -449,7 +449,34 @@ Request:
 - Stores the message with `status=new` and hashed IP, sends an email to `CONTACT_RECIPIENT_EMAIL` with `EMAIL_TIMEOUT=10`; a send failure is logged and does not change the response.
 - Throttle `contact` (3/hour/IP).
 
-### 5.6 System
+### 5.6 Editorial console — `/api/v1/admin/`
+
+These endpoints back the Next.js `/console` workspace. They are not public, are always `no-store`, and use the same session cookie and CSRF rules as other unsafe API requests. They were added after the original 32-endpoint R1 contract and are documented here as additive v1 routes (ADR-0011).
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/admin/overview/` | Console role | Counts and recent content for the console landing page |
+| GET | `/admin/content/categories/` | Console role | List all categories, including drafts and archived records |
+| POST | `/admin/content/categories/` | Editor/Admin | Create a category |
+| GET | `/admin/content/categories/{id}/` | Console role | Read one category |
+| PATCH | `/admin/content/categories/{id}/` | Editor/Admin | Update a category |
+| DELETE | `/admin/content/categories/{id}/` | Admin | Delete a category |
+| GET | `/admin/content/tutorials/` | Console role | List all tutorials |
+| POST | `/admin/content/tutorials/` | Editor/Admin | Create a tutorial |
+| GET | `/admin/content/tutorials/{id}/` | Console role | Read one tutorial |
+| PATCH | `/admin/content/tutorials/{id}/` | Editor/Admin | Update a tutorial |
+| DELETE | `/admin/content/tutorials/{id}/` | Admin | Delete a tutorial |
+| GET | `/admin/content/chapters/` | Console role | List all chapters |
+| POST | `/admin/content/chapters/` | Editor/Admin | Create a chapter |
+| GET | `/admin/content/chapters/{id}/` | Console role | Read one chapter |
+| PATCH | `/admin/content/chapters/{id}/` | Editor/Admin | Update a chapter |
+| DELETE | `/admin/content/chapters/{id}/` | Admin | Delete a chapter |
+
+Console roles are `editor`, `moderator`, and `admin`; only `editor` and `admin` may write, and only `admin` may delete. For non-admin writers, `status`, `published_at`, and `is_demo` are read-only. Slugs are generated from `name`/`title`; setting a tutorial to `published` requires at least one published chapter. Model `full_clean()` validation still applies, and every create/update/delete writes an `AdministrativeAuditLog` entry with actor, action, model label, and object id.
+
+List endpoints return arrays of read serializers; create returns `201` with the read representation, update returns `200`, and delete returns `204`. Invalid writes use the standard `400 validation_error` envelope; unauthorised writes use `401 authentication_required` or `403 permission_denied`; unknown ids use `404 not_found`.
+
+### 5.7 System
 
 #### GET /health/
 
@@ -497,7 +524,7 @@ Maximum queries per request, enforced by tests in Phase 3:
 | Endpoint group | Header |
 |---|---|
 | `/home/`, `/categories/*`, `/tutorials/*`, `/tags/`, `/redirects/` | `public, max-age=60` (home) or `300`, `stale-while-revalidate=60` |
-| `/search/*`, `/auth/*`, `/bookmarks/*`, `/progress/*`, `/contact/`, `/health/`, `/ready/`, `/schema/` | `no-store` |
+| `/search/*`, `/auth/*`, `/bookmarks/*`, `/progress/*`, `/contact/`, `/health/`, `/ready/`, `/schema/`, `/admin/*` | `no-store` |
 | Verified learner fields inside otherwise public payloads (`progress`, `bookmark`) | response is `private, no-store` when the user is authenticated |
 
 ## 8. Versioning and deprecation

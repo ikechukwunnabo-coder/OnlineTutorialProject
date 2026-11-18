@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { getMe, logout } from "@/lib/api/browser";
 import type { UserProfile } from "@/lib/api/types";
+import { canAccessConsole } from "@/lib/console";
 
 export function AccountNav() {
   const router = useRouter();
@@ -88,6 +89,14 @@ export function AccountNav() {
       >
         My learning
       </Link>
+      {canAccessConsole(user.role) ? (
+        <Link
+          href="/console"
+          className="hidden text-sm font-bold text-cobalt no-underline hover:text-cobalt-dark sm:inline"
+        >
+          Console
+        </Link>
+      ) : null}
       <Link
         href="/profile"
         className="max-w-28 truncate text-sm font-bold text-ink no-underline hover:text-cobalt sm:max-w-40"

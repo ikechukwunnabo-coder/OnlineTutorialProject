@@ -14,6 +14,7 @@ This folder is the single decision log. Each significant decision gets a numbere
 | [0008](0008-typescript-version.md) | TypeScript 5.9.x for R1, defer TypeScript 7 | Accepted | 2026-11-13 |
 | [0009](0009-single-domain-topology.md) | Single-domain topology with `/api/` reverse proxy | Accepted | 2026-11-13 |
 | [0010](0010-api-versioning-and-errors.md) | API versioning and consistent error envelope | Accepted | 2026-11-13 |
+| [0011](0011-nextjs-editorial-console.md) | Next.js editorial console for content CRUD | Accepted | 2026-11-18 |
 
 ## Conventions
 

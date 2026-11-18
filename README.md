@@ -7,7 +7,7 @@ A content-first programming tutorial platform for absolute beginners.
 - **Deployment:** Docker Compose, Nginx TLS, Gunicorn, PostgreSQL 18.7, Redis 8.4.8
 - **Docs:** `docs/PROJECT_STATUS.md` (living status), `docs/ARCHITECTURE.md`, `docs/API_CONTRACT.md`, `docs/RUNBOOK.md`, `docs/R1_GATE.md`, `docs/decisions/`
 
-Release 1 is built in phases. Phases 0-6 are complete. Phase 7 production assets and AC-30 media validation are authored and local checks pass, but the **R1 gate is NOT PASSED**: production Compose/Nginx/TLS, PostgreSQL 18.7, Redis 8.4.8, CI, live email, and p75 LCP remain open. See `docs/R1_GATE.md`.
+Release 1 is built in phases. Phases 0-6 are complete. Phase 7 production assets, AC-30 media validation, and the role-protected `/console` editorial workflow are authored and local checks pass, but the **R1 gate is NOT PASSED**: production Compose/Nginx/TLS, PostgreSQL 18.7, Redis 8.4.8, live email, and p75 LCP remain open. CI passed on an earlier commit; the console follow-up was verified locally. See `docs/R1_GATE.md`.
 
 ## Prerequisites
 
@@ -39,7 +39,7 @@ Set-Location backend
 email:admin@onlinetutorial.com Admin$1234
 ```
 
-Open `http://localhost:8000/admin/` and `http://localhost:8000/api/v1/health/`.
+Open `http://localhost:8000/admin/` and `http://localhost:8000/api/v1/health/`. The superuser has the Admin role and can also sign in at `http://localhost:3000/login` to use the editorial console at `http://localhost:3000/console`.
 
 If `DATABASE_URL` is unset, development falls back to `backend/db.sqlite3`. PostgreSQL is required for CI and production.
 
@@ -110,6 +110,8 @@ See `docs/RUNBOOK.md` for TLS bootstrap/renewal, backups, restore/cutover, rollb
 | Dependency audit | `pip-audit -r requirements/base.txt` |
 | Production dependency audit | `pip-audit -r requirements/prod.txt` |
 | OpenAPI schema (dev) | `GET /api/v1/schema/` |
+| Console overview | `GET /api/v1/admin/overview/` |
+| Console content CRUD | `GET/POST /api/v1/admin/content/{categories,tutorials,chapters}/` and `GET/PATCH/DELETE /api/v1/admin/content/{resource}/<id>/` |
 
 From `frontend/` with Node 26.13.1:
 
@@ -168,7 +170,7 @@ Set-Location backend
 
 CI (`.github/workflows/ci.yml`) runs Ruff, formatting, mypy, migration drift check, Django system checks, the production `check --deploy` baseline, OpenAPI schema validation, a dependency audit, and pytest against PostgreSQL 18.7 and Redis 8.4.8, plus a secret scan. The frontend job activates automatically when `frontend/package.json` exists.
 
-Current local evidence: **162 backend tests at 93.28% coverage**, **20 frontend tests**, a **49-page standalone production build**, clean Ruff/ESLint/typecheck, clean production dependency audits, AC-30 media validation tests, a local PostgreSQL 17 restore drill, and a passing GitHub Actions run (`44268233115`) on PostgreSQL 18.7 and Redis 8.4.8. AC-21 remains open.
+Current local evidence: **176 backend tests at 93.37% coverage**, **26 frontend tests**, a passing standalone production build with console routes included, clean Ruff/ESLint/typecheck, clean production dependency audits, AC-30 media validation tests, console CRUD/permission tests, a local PostgreSQL 17 restore drill, and a passing GitHub Actions run (`44268233115`) on PostgreSQL 18.7 and Redis 8.4.8. The CI run predates the console follow-up; AC-21 remains open.
 
 Local tests default to in-memory SQLite unless `DATABASE_URL` is set. Run them against PostgreSQL (Compose or CI) before relying on database-specific behaviour.
 

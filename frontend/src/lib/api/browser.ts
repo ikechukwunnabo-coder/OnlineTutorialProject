@@ -3,6 +3,12 @@ import type {
   Bookmark,
   BookmarkPage,
   ChapterDetail,
+  ConsoleCategory,
+  ConsoleCategoryInput,
+  ConsoleChapter,
+  ConsoleChapterInput,
+  ConsoleTutorial,
+  ConsoleTutorialInput,
   ContactInput,
   ContactResponse,
   LoginInput,
@@ -267,4 +273,59 @@ export function saveProgress(
     method: "PUT",
     body: JSON.stringify(input),
   });
+}
+
+export function createConsoleCategory(input: ConsoleCategoryInput): Promise<ConsoleCategory> {
+  return unsafeRequest<ConsoleCategory>("/admin/content/categories/", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateConsoleCategory(
+  id: number,
+  input: ConsoleCategoryInput,
+): Promise<ConsoleCategory> {
+  return unsafeRequest<ConsoleCategory>(`/admin/content/categories/${id}/`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export function createConsoleTutorial(input: ConsoleTutorialInput): Promise<ConsoleTutorial> {
+  return unsafeRequest<ConsoleTutorial>("/admin/content/tutorials/", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateConsoleTutorial(
+  id: number,
+  input: ConsoleTutorialInput,
+): Promise<ConsoleTutorial> {
+  return unsafeRequest<ConsoleTutorial>(`/admin/content/tutorials/${id}/`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export function createConsoleChapter(input: ConsoleChapterInput): Promise<ConsoleChapter> {
+  return unsafeRequest<ConsoleChapter>("/admin/content/chapters/", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateConsoleChapter(
+  id: number,
+  input: ConsoleChapterInput,
+): Promise<ConsoleChapter> {
+  return unsafeRequest<ConsoleChapter>(`/admin/content/chapters/${id}/`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteConsoleContent(kind: "categories" | "tutorials" | "chapters", id: number): Promise<void> {
+  return unsafeRequest<void>(`/admin/content/${kind}/${id}/`, { method: "DELETE" });
 }

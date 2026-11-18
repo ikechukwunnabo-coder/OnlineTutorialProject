@@ -218,7 +218,7 @@ export interface ContactResponse {
   message: string;
 }
 
-export type UserRole = "learner" | "editor" | "admin";
+export type UserRole = "learner" | "editor" | "moderator" | "admin";
 
 export interface UserSummary {
   id: number;
@@ -329,4 +329,131 @@ export interface ProgressOverview {
     percent_complete: number;
   };
   tutorials: ProgressTutorialItem[];
+}
+
+export interface ConsoleCounts {
+  categories: number;
+  tutorials: number;
+  chapters: number;
+  users: number;
+  contact_messages: number;
+  drafts: number;
+  published: number;
+  archived: number;
+  demo_content: number;
+}
+
+export interface ConsoleStatusCount {
+  status: "draft" | "published" | "archived";
+  label: string;
+  count: number;
+}
+
+export interface ConsoleContentItem {
+  kind: "Tutorial" | "Chapter";
+  title: string;
+  parent: string;
+  slug: string;
+  status: "draft" | "published" | "archived";
+  updated_at: string;
+}
+
+export interface ConsoleActivityItem {
+  id: number;
+  actor: string | null;
+  action: string;
+  model_label: string;
+  object_id: string;
+  created_at: string;
+}
+
+export interface ConsoleOverview {
+  generated_at: string;
+  role: "editor" | "moderator" | "admin";
+  counts: ConsoleCounts;
+  content_by_status: ConsoleStatusCount[];
+  recent_content: ConsoleContentItem[];
+  recent_activity: ConsoleActivityItem[];
+}
+
+export type ConsolePublicationStatus = "draft" | "published" | "archived";
+
+export interface ConsoleCategory {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  icon: string;
+  display_order: number;
+  status: ConsolePublicationStatus;
+  is_demo: boolean;
+  updated_at: string;
+}
+
+export interface ConsoleCategoryInput {
+  name: string;
+  slug?: string;
+  description?: string;
+  icon?: string;
+  display_order?: number;
+  status?: ConsolePublicationStatus;
+  is_demo?: boolean;
+}
+
+export interface ConsoleUserRef {
+  id: number;
+  email: string;
+  display_name: string;
+}
+
+export interface ConsoleTutorial {
+  id: number;
+  title: string;
+  slug: string;
+  summary: string;
+  category: { id: number; name: string; slug: string };
+  author: ConsoleUserRef;
+  difficulty: "beginner" | "intermediate" | "advanced";
+  estimated_reading_time: number;
+  status: ConsolePublicationStatus;
+  is_demo: boolean;
+  tags: { name: string; slug: string }[];
+  published_at: string | null;
+  updated_at: string;
+}
+
+export interface ConsoleTutorialInput {
+  category: number;
+  title: string;
+  slug?: string;
+  summary: string;
+  difficulty?: "beginner" | "intermediate" | "advanced";
+  status?: ConsolePublicationStatus;
+  is_demo?: boolean;
+}
+
+export interface ConsoleChapter {
+  id: number;
+  tutorial: { id: number; title: string; slug: string };
+  title: string;
+  slug: string;
+  summary: string;
+  content: string;
+  order: number;
+  estimated_reading_time: number;
+  status: ConsolePublicationStatus;
+  is_demo: boolean;
+  published_at: string | null;
+  updated_at: string;
+}
+
+export interface ConsoleChapterInput {
+  tutorial: number;
+  title: string;
+  slug?: string;
+  summary?: string;
+  content?: string;
+  order: number;
+  status?: ConsolePublicationStatus;
+  is_demo?: boolean;
 }

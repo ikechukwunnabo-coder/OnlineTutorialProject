@@ -1,7 +1,7 @@
 # Test Strategy — Ben Digital Solution
 
 **Last updated:** 2026-11-18 (Phase 7)
-**Scope:** R1 backend foundation, auth/account API, Next.js public/auth frontend, learner features, and Playwright/axe/performance checks. Production hardening is added in Phase 7.
+**Scope:** R1 backend foundation, auth/account API, Next.js public/auth frontend, learner features, the `/console` editorial workflow, and Playwright/axe/performance checks. Production hardening is added in Phase 7.
 
 ## 1. Principles
 
@@ -18,7 +18,7 @@
 | Layer | Tool | Current use |
 |---|---|---|
 | Unit/model tests | pytest + pytest-django | R1 models, constraints, indexes, managers, signals, reading-time logic |
-| Admin/permission tests | pytest + Django test client | Staff/editor/admin boundaries, publication controls, audit logging |
+| Admin/permission tests | pytest + Django test client | Staff/editor/admin boundaries, console CRUD roles, publication controls, audit logging |
 | Command tests | `call_command` | `seed_demo` idempotency and `purge_demo_content` isolation |
 | HTTP foundation tests | Django test client | Health, readiness, request ID, error envelope, placeholder page |
 | Coverage | coverage.py via pytest-cov | 85% application-code threshold |
@@ -302,3 +302,32 @@ fnm exec --using 26.13.1 -- cmd /c "npm run test:e2e -- e2e/performance.spec.ts"
 - Cache-invalidation signal branches remain partially covered; later API/E2E phases should exercise slug changes, unpublish, and delete paths.
 - Email-provider delivery, timeout, bounce, and inbox-rendering behaviour remain unverified; only LocMem call/failure paths are covered.
 - Session revocation and throttle counters under Redis/multi-process deployment remain unverified locally.
+
+## 12. Editorial console follow-up evidence (2026-11-18)
+
+The following results supersede the historical Phase 7 counts for local code state. CI run `44268233115` predates this follow-up and is not evidence for the console routes.
+
+| Check | Result |
+|---|---|
+| Backend `pytest -q` | **176 passed**; **93.37%** application coverage |
+| Targeted console tests (`test_console.py`, `test_console_content.py`, `--no-cov`) | **14 passed** |
+| Backend `ruff check .` / `ruff format --check .` | All checks passed; 111 files already formatted |
+| Backend `mypy .` | Success: no issues in 80 source files |
+| Frontend `tsc --noEmit` | Clean |
+| Frontend `eslint .` | Clean |
+| Frontend Vitest | **26 passed in 8 files** |
+| Frontend `next build` | Passed; route table includes `/console`, `/console/content`, and six content new/edit routes |
+| Live console API smoke | `health=200`, `overview=200`, categories/tutorials/chapters lists `200`, unauth content list `401` |
+| Live page smoke | `/console/content`, `/console/content/categories/new` returned `200` with an admin session; unauth `/console/content` returned the client-side login redirect shell |
+| Stale dev module cache | `getConsoleOverview is not a function` was resolved by restarting the Next dev server after the overview implementation |
+
+### Editorial console test inventory
+
+| Area | Tests |
+|---|---|
+| Backend console overview | 5 |
+| Backend console CRUD, permissions, slug generation, publish guard, audit logging | 9 |
+| Frontend console role helpers | 4 |
+| Frontend date-time formatting additions | 2 |
+
+Production Compose/Nginx/TLS, PostgreSQL 18.7, Redis 8.4.8, live email, p75 LCP, manual accessibility/visual review, and console CRUD on the production stack remain unrun.

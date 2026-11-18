@@ -11,13 +11,13 @@ This is the Phase 7 evidence table. It records what was actually run in this wor
 | Item | Value |
 |---|---|
 | Host | Windows, local workspace |
-| Backend tests | Python 3.14.8, SQLite + LocMem cache |
+| Backend tests | Python 3.14.8, SQLite + LocMem cache; current local suite includes console CRUD tests |
 | Database drill | Local PostgreSQL 17.0, scratch databases `bds_r1_phase7` and `bds_r1_phase7_restore` |
 | Frontend checks | Node 26.13.1 via `fnm`, Next.js 16.4.6 |
-| Production frontend build | `next build` with `API_INTERNAL_URL=http://127.0.0.1:8010/api/v1` |
+| Production frontend build | `next build` with console routes included; earlier standalone build used `API_INTERNAL_URL=http://127.0.0.1:8010/api/v1` |
 | Docker | CLI present; daemon unavailable; Compose stack not started |
 | PostgreSQL 18.7 / Redis 8.4.8 | Not available locally |
-| GitHub Actions | Executed: run `44268233115` on commit `bf20bd9`; backend, frontend, and secret-scan jobs passed |
+| GitHub Actions | Executed: run `44268233115` on commit `bf20bd9`; backend, frontend, and secret-scan jobs passed. This predates the console follow-up, which is verified locally only. |
 | Live email | Not executed; LocMem/console only |
 | Git | Committed and pushed to `origin/main`; CI validated the pushed workflow fix |
 
@@ -30,20 +30,21 @@ This is the Phase 7 evidence table. It records what was actually run in this wor
 | Docker Desktop startup attempt | FAIL | VM guest-service sockets never appeared; `docker info` timed out; processes stopped |
 | Nginx runtime/TLS | NOT RUN | Nginx binary and Docker daemon unavailable; template not syntax-tested by Nginx |
 | Shell script syntax | PASS | `bash -n` passed for `backup.sh`, `restore.sh`, `smoke-test.sh`, and `deploy.sh` |
-| Backend test suite | PASS | **162 passed**; **93.28%** application coverage; 85% threshold reached |
+| Backend test suite | PASS | **176 passed**; **93.37%** application coverage; 85% threshold reached |
 | Backend Ruff lint | PASS | All checks passed |
-| Backend Ruff formatting | PASS | 109 files already formatted |
+| Backend Ruff formatting | PASS | 111 files already formatted |
 | Backend mypy | PASS | No issues in 80 source files |
 | `check --deploy` | PASS | No issues with production settings and a 50+ character check-only key |
 | Backend dependency audit | PASS | `pip-audit -r requirements/prod.txt -s osv` reported no known vulnerabilities |
 | Frontend typecheck | PASS | `tsc --noEmit` clean |
 | Frontend lint | PASS | `eslint .` clean |
-| Frontend unit/component tests | PASS | **20 passed in 7 files** |
-| Frontend production build | PASS | **49 static pages**; standalone output at `.next/standalone/server.js`; one attempt hit a transient catalog `503`, retry succeeded |
+| Frontend unit/component tests | PASS | **26 passed in 8 files** |
+| Frontend production build | PASS | Build passed with console routes included; 20 static pages generated in the latest run; earlier standalone output at `.next/standalone/server.js` |
 | Frontend production dependency audit | PASS | `npm audit --omit=dev` found 0 vulnerabilities |
 | Frontend full audit | PARTIAL | `npm audit --package-lock-only` reports **18 vulnerabilities (6 moderate, 12 high)** in dev tooling; fixing requires breaking changes |
 | Secret scan | PASS (repo) | Pattern scan found only placeholder values in `.env.example` and `.env.prod.example`; images were not built |
 | Health/readiness | PASS | `/api/v1/health/` returned `200 {"status":"ok"}`; `/api/v1/ready/` returned `200 {"status":"ready","checks":{"database":"ok","redis":"ok"}}` on QA settings |
+| Editorial console smoke | PASS | Admin session: overview and all three content list endpoints `200`; unauth content list `401`; `/console/content` and `/console/content/categories/new` `200`; unauth `/console/content` returned the client-side login redirect shell |
 | Backup/restore drill | PASS (PostgreSQL 17) | 85,299-byte custom dump; restored into clean `bds_r1_phase7_restore`; verified 20 chapters, 5 tutorials, 4 categories, and known title `Demo: What HTML Does` |
 | Content counts | PASS | QA SQLite audit: 20 published chapters, 5 tutorials, 4 categories, 20 with content, 0 demo |
 | Media validation (AC-30) | PASS | 27 backend tests cover upload extension/content-type/magic-byte/size checks, alt-text/decorative rules, strict YouTube/Vimeo URL parsing, API output, and admin inlines; Nginx `frame-src` allowlists only `www.youtube.com` and `player.vimeo.com` |
@@ -81,10 +82,10 @@ This is the Phase 7 evidence table. It records what was actually run in this wor
 | AC-22 | PASS | `check --deploy` clean; production dependency audits clean; dev-toolchain findings documented |
 | AC-23 | PASS | Health/readiness checks passed; email failure logging tested |
 | AC-24 | PARTIAL | Restore drill passed on PostgreSQL 17; PostgreSQL 18.7 production restore not executed |
-| AC-25 | PASS | GitHub Actions run `44268233115` passed on commit `bf20bd9`; backend matrix used PostgreSQL 18.7 and Redis 8.4.8, frontend built successfully, and gitleaks passed |
+| AC-25 | PASS | GitHub Actions run `44268233115` passed on commit `bf20bd9`; backend matrix used PostgreSQL 18.7 and Redis 8.4.8, frontend built successfully, and gitleaks passed. Console follow-up was verified locally after this run. |
 | AC-26 | PARTIAL | Counts pass (20/5/4/20); manual content checklist not completed |
 | AC-27 | PARTIAL | Repository secret scan clean; production images were not built or scanned |
-| AC-28 | PASS | Admin/API permission and audit-log tests |
+| AC-28 | PASS | Django admin and console CRUD permission tests cover create/edit/publish/unpublish/archive/delete boundaries, publication rules, and audit-log entries |
 | AC-29 | PASS | Seed idempotency and demo-exclusion tests |
 | AC-30 | PASS | Admin-only `ChapterImage` validates JPEG/PNG/WebP extension, content type, magic bytes, and 2 MB size, with required alt text or explicit decorative flag; `VideoEmbed` stores only parsed YouTube/Vimeo IDs and renders controlled `embed_url` values; arbitrary iframe HTML remains stripped |
 | AC-31 | PARTIAL | Backend Sentry is env-gated and JSON logging exists; frontend Sentry is not wired and log inspection is not exhaustive |
@@ -94,7 +95,7 @@ This is the Phase 7 evidence table. It records what was actually run in this wor
 
 ## 4. Blocking items
 
-1. **Production environment evidence:** build and run the Compose stack on a Linux host; verify PostgreSQL 18.7, Redis 8.4.8, Nginx TLS, health checks, security headers, and memory use.
+1. **Production environment evidence:** build and run the Compose stack on a Linux host; verify PostgreSQL 18.7, Redis 8.4.8, Nginx TLS, health checks, security headers, memory use, and `/console` role routing.
 2. **AC-21:** measure p75 mobile LCP on chapter pages with documented device/network conditions.
 3. **Manual accessibility/visual QA:** keyboard, screen-reader, contrast, and screenshot review.
 4. **Live email:** verify registration, verification, reset, and contact delivery with the chosen provider.

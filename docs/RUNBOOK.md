@@ -1,6 +1,6 @@
 # Production Runbook - Ben Digital Solution
 
-**Last updated:** 2026-11-18 (Phase 7)
+**Last updated:** 2026-11-18 (Phase 7, editorial console follow-up)
 **Status:** Authored, not executed on a Linux/Docker production host. Treat every command as unverified until the Phase 7 gate is completed on the target VPS.
 
 ## 1. Scope
@@ -17,6 +17,7 @@ Internet
   v
 Nginx :80/:443  (TLS, security headers, gzip)
   |-- /api/v1/, /admin/  -> backend:8000 (Gunicorn)
+  |-- /console/          -> frontend:3000 (Next.js editorial console)
   |-- /static/, /media/  -> shared volumes
   |-- /_next/static/     -> frontend:3000
   |-- /                  -> frontend:3000
@@ -107,7 +108,7 @@ docker compose --env-file .env.prod -f infra/compose/compose.prod.yaml \
   exec backend python manage.py createsuperuser
 ```
 
-Create categories, tutorials, and chapters through Django admin at `https://$DOMAIN/admin/`.
+Create categories, tutorials, and chapters through the editorial console at `https://$DOMAIN/console`. Django admin at `https://$DOMAIN/admin/` remains available for user roles, settings, media, audit history, and recovery. Console access requires the `editor`, `moderator`, or `admin` role; only editors/admins may write content, and only admins may publish or delete.
 
 Do not run `seed_demo` on production unless it is immediately followed by `purge_demo_content`. Demo records are excluded from public counts and the sitemap, but they should not exist on the launch database.
 
@@ -123,6 +124,7 @@ Also verify manually:
 - `/api/v1/health/` and `/api/v1/ready/` return `200`.
 - Login, registration, verification, and password reset work with the live email provider.
 - Admin login works and is not publicly linked.
+- `/console` rejects learners and anonymous users; editors can create/edit but cannot publish or delete; admins can publish/archive/delete; console writes create audit-log entries.
 - Response headers include HSTS, CSP, `X-Content-Type-Options`, and `Referrer-Policy`.
 - A chapter with an admin-uploaded image shows the validated alt text (empty only when marked decorative), and a saved YouTube/Vimeo embed loads under the allowlisted `frame-src` CSP.
 - `http://` redirects to `https://`.
@@ -246,7 +248,7 @@ If the previous revision expects an older schema, restore the matching database 
 
 The following are not verified in the current workspace:
 
-- Docker/Compose stack, Nginx runtime configuration, and container health checks.
+- Docker/Compose stack, Nginx runtime configuration, `/console` role routing, and container health checks.
 - PostgreSQL 18.7 and Redis 8.4.8 (local PostgreSQL is 17; local Redis is 3.0.504).
 - GitHub Actions CI execution.
 - Live transactional email delivery.

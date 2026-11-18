@@ -119,7 +119,7 @@ Headings must form a logical hierarchy (one H1, then H2/H3) because the table of
 ## 7. Editorial workflow (R1)
 
 ```text
-Idea/outline → Draft (admin) → Author self-review → Technical verification
+Idea/outline → Draft (`/console` or admin) → Author self-review → Technical verification
 → Quality checklist → Publish → Maintain (errata/update) → Archive/Unpublish
 ```
 
@@ -131,11 +131,11 @@ Idea/outline → Draft (admin) → Author self-review → Technical verification
 | Published | Passed checklist; visible publicly and in sitemap | Edit (creates updated date), unpublish, archive |
 | Archived | Retired content; not public | Restore to draft or delete |
 
-The owner is the sole author and holds Admin. The Editor role (content CRUD and submit-for-review, no publishing) exists in the permission matrix but has no second user in R1; it is defined so a future collaborator can be added without redesign.
+The owner is the sole author and holds Admin. The Editor role can create and edit content in `/console` or Django admin but cannot publish or delete; no second editor is assigned in R1. The role is defined so a future collaborator can be added without redesign.
 
 ### 7.2 Revision strategy
 
-R1 uses Django admin history as the revision record. Full `ContentRevision` storage and a formal review workflow are R2 features (ADR-0006). Authors must still keep the published Markdown recoverable from admin history before destructive edits.
+R1 uses Django admin history as the revision record and `AdministrativeAuditLog` for console create/update/delete actions. Full `ContentRevision` storage and a formal review workflow are R2 features (ADR-0006). Authors must still keep the published Markdown recoverable from admin history before destructive edits.
 
 ### 7.3 Publishing checklist (mandatory, recorded per chapter)
 

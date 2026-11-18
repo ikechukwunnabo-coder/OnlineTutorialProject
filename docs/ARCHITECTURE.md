@@ -21,6 +21,9 @@ This document is the system context, topology, data model, permission matrix, en
 flowchart LR
     V[Anonymous visitor / learner] -->|HTTPS| S[Ben Digital Solution]
     A[Owner / administrator] -->|HTTPS| ADM[Django admin]
+    E[Editor / moderator] -->|HTTPS| CS[Next.js /console]
+    A --> CS
+    CS --> S
     S --> EM[Transactional email provider]
     S --> CR[Search engine crawlers]
     S --> MON[Error tracking / monitoring]
@@ -29,7 +32,7 @@ flowchart LR
 
 - One primary domain serves public pages, the API, admin, and media.
 - Public content is readable without JavaScript.
-- The owner manages content and users in Django admin.
+- The owner manages content in Django admin and the Next.js `/console`; users, settings, media, and audit history remain in Django admin.
 - Email is the only external service required by R1; error tracking is optional and env-configured.
 
 ## 3. Container and deployment topology
@@ -37,7 +40,7 @@ flowchart LR
 ```mermaid
 flowchart TB
     B[Browser] -->|80/443| N[Nginx]
-    N -->|"/" , "/_next"| F[Next.js 16 server :3000]
+    N -->|"/" , "/console" , "/_next"| F[Next.js 16 server :3000]
     N -->|"/api/v1" , "/admin"| D[Gunicorn + Django :8000]
     N -->|"/static" , "/media"| V[(Static and media volumes)]
     F -->|server-side fetch API_INTERNAL_URL| D
@@ -603,11 +606,11 @@ No composite partial indexes are added until a measured query requires them.
 | Anonymous | Not authenticated |
 | Learner (unverified) | Registered, email not verified |
 | Learner (verified) | Email verified |
-| Editor | Content CRUD and submit for review; cannot publish; staff admin access limited to content |
-| Moderator | R2 only; comment moderation and reports |
-| Admin | Publish/archive, manage users and settings, view audit log |
+| Editor | Content CRUD in `/console` and Django admin; cannot publish or delete; staff admin access limited to content |
+| Moderator | Read-only `/console` overview and content lists in R1; comment moderation and reports in R2 |
+| Admin | Publish/archive/delete, manage users and settings, view audit log |
 
-R1 has one human user (owner) with Admin. Editor and Moderator are defined now so the permission model does not need redesign later.
+R1 has one human user (owner) with Admin. Editor and Moderator roles are available so future collaborators and moderation work do not require a permission redesign; the editor role is now usable through the console even though no second author is assigned.
 
 ### 8.2 Permission matrix
 
@@ -617,7 +620,8 @@ Legend: Y = allowed; N = denied; S = self/own record only; — = not applicable 
 |---|---|---|---|---|---|---|
 | View published catalog/chapters | Y | Y | Y | Y | Y | Y |
 | Search published content | Y | Y | Y | Y | Y | Y |
-| View draft/archived content | N | N | N | Y (admin) | N | Y (admin) |
+| View editorial console | N | N | N | Y | Y | Y |
+| View draft/archived content in console | N | N | N | Y | Y | Y |
 | Register | Y | — | — | — | — | — |
 | Verify email / resend verification | Y (token) | Y (own) | — | — | — | — |
 | Login / logout / session restore | Y | Y | Y | Y | Y | Y |
@@ -630,6 +634,7 @@ Legend: Y = allowed; N = denied; S = self/own record only; — = not applicable 
 | View own bookmarks/progress | N | N | S | S | S | S |
 | Create/edit draft content | N | N | N | Y | N | Y |
 | Publish/archive content | N | N | N | N | N | Y |
+| Delete content | N | N | N | N | N | Y |
 | Manage categories/tags | N | N | N | Y (no delete) | N | Y |
 | Manage users and roles | N | N | N | N | N | Y |
 | Manage site settings | N | N | N | N | N | Y |
@@ -640,7 +645,8 @@ Legend: Y = allowed; N = denied; S = self/own record only; — = not applicable 
 
 Enforcement:
 
-- DRF permission classes enforce authenticated, verified, staff, and object ownership rules on the backend.
+- DRF permission classes enforce authenticated, verified, staff, object ownership, and console role rules on the backend.
+- `IsConsoleUser`, `IsContentEditor`, and `IsContentAdmin` map the console matrix to read, write, and delete boundaries; every console write writes an `AdministrativeAuditLog` entry.
 - Django admin `has_*_permission` methods enforce Editor vs Admin publication rights.
 - Frontend route guards are UX only; every protected request is authorised again by Django.
 - Object-level checks return `404` for content the requester may not see, preventing existence leaks.
