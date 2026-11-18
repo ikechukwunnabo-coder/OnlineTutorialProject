@@ -1,0 +1,13 @@
+-r base.txt
+pytest==9.2.0
+pytest-django==4.14.0
+pytest-cov==7.1.0
+factory-boy==3.3.3
+Faker==40.54.0
+coverage==7.17.3
+ruff==0.17.5
+mypy==1.19.1
+django-stubs==5.2.9
+types-Markdown==3.11.3.20261108
+pre-commit==4.7.0
+pip-audit==2.10.1
