@@ -26,6 +26,8 @@ PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
+Copy-Item .env.development.example .env.development
+Copy-Item frontend\.env.example frontend\.env.local
 python -m venv .venv
 & .venv\Scripts\python.exe -m pip install -r backend\requirements\dev.txt
 $env:DJANGO_SETTINGS_MODULE = "config.settings.dev"
@@ -40,6 +42,13 @@ email:admin@onlinetutorial.com Admin$1234
 Open `http://localhost:8000/admin/` and `http://localhost:8000/api/v1/health/`.
 
 If `DATABASE_URL` is unset, development falls back to `backend/db.sqlite3`. PostgreSQL is required for CI and production.
+
+If port 8000 is already occupied, start the backend on 8011 and point the frontend at it:
+
+```powershell
+& ..\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8011 --settings=config.settings.dev --noreload
+# frontend\.env.local: API_INTERNAL_URL=http://127.0.0.1:8011/api/v1
+```
 
 Frontend (Node 26.13.1 via `fnm`):
 
@@ -131,7 +140,13 @@ docs/                  status, architecture, API contract, runbook, R1 gate, ADR
 
 ## Configuration
 
-All configuration is environment-based. See `.env.example` for the full inventory. Never commit `.env` or real credentials.
+All configuration is environment-based. See `.env.example` for the full inventory and the environment-specific templates for normal use:
+
+- `DJANGO_ENV=development` loads `.env.development`, `.env.dev`, then `.env`.
+- `DJANGO_ENV=test` loads `.env.test`, then `.env`.
+- `DJANGO_ENV=production` loads `.env.production`, `.env.prod`, then `.env`.
+
+If `REDIS_URL` is unset, Django uses `LocMemCache`; set it only when Redis 8.4.8 is available. Never commit environment files containing real credentials.
 
 Key variables:
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import environ
@@ -23,6 +24,23 @@ env = environ.Env(
 )
 
 for env_file in (PROJECT_ROOT / ".env", BASE_DIR / ".env"):
+    if env_file.exists():
+        environ.Env.read_env(env_file)
+        break
+
+ENVIRONMENT = os.environ.get("DJANGO_ENV", os.environ.get("APP_ENV", "development")).lower()
+ENV_FILE_NAMES = {
+    "development": (".env.development", ".env.dev"),
+    "dev": (".env.development", ".env.dev"),
+    "test": (".env.test",),
+    "production": (".env.production", ".env.prod"),
+    "prod": (".env.production", ".env.prod"),
+}
+ENV_FILE_CANDIDATES = ENV_FILE_NAMES.get(ENVIRONMENT, (f".env.{ENVIRONMENT}",))
+for env_file in [
+    *(PROJECT_ROOT / name for name in ENV_FILE_CANDIDATES),
+    *(BASE_DIR / name for name in ENV_FILE_CANDIDATES),
+]:
     if env_file.exists():
         environ.Env.read_env(env_file)
         break
@@ -112,13 +130,23 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.ScryptPasswordHasher",
 ]
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": env("REDIS_URL", default="redis://localhost:6379/0"),
-        "TIMEOUT": 300,
+REDIS_URL = env("REDIS_URL", default="")
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+            "TIMEOUT": 300,
+        }
     }
-}
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": f"bds-{ENVIRONMENT}",
+            "TIMEOUT": 300,
+        }
+    }
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 SESSION_CACHE_ALIAS = "default"
