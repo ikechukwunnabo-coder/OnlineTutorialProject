@@ -110,8 +110,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   frontend:
-    name: Frontend (activated in Phase 5)
-    if: ${{ hashFiles('frontend/package.json') != '' }}
+    name: Frontend
     runs-on: ubuntu-latest
     defaults:
       run:
