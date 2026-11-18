@@ -829,7 +829,7 @@ Rules: `.env` is gitignored; `.env.example` never contains real credentials; pro
 - Installed and import-verified: Django 5.2.19, DRF 3.18.3, drf-spectacular 0.30.0, django-filter 26.2, django-environ 0.14.0, psycopg 3.3.8, redis-py 8.1.0, argon2-cffi 25.1.0, pytest 9.2.0, pytest-django 4.14.0, pytest-cov 7.1.0, factory-boy 3.3.3, coverage 7.17.3, Ruff 0.17.5, mypy 1.19.1, django-stubs 5.2.9, pre-commit 4.7.0, pip-audit 2.10.1.
 - R1 models, constraints, indexes, and six initial migrations are implemented; migrations apply cleanly to SQLite.
 - Phase 2 local evidence: `ruff check` and `ruff format --check` pass; `mypy` reports no issues; `makemigrations --check` reports no drift; `pytest` reports 60 passed at 93.58% coverage; OpenAPI validation reports 0 warnings/0 errors; `check --deploy` reports no issues with a production-shaped environment.
-- PostgreSQL 18.7 and Redis 8.4.8 were **not** started locally because the Docker daemon is unavailable. The CI workflow defines both services and test settings use Redis when `REDIS_URL` is set, but the workflow has not executed on GitHub yet.
+- PostgreSQL 18.7 and Redis 8.4.8 were **not** started locally because the Docker daemon is unavailable. GitHub Actions run `44268233115` exercised both services successfully on Linux; production Compose/Nginx parity on a target host remains unverified.
 - The development Compose stack, Docker image build, and Gunicorn startup are unverified locally; Gunicorn is Linux-container only.
 - Next.js is not installed in Phase 2; frontend pins and the exact Next.js 16 cache API are validated in Phase 5.
 - A Django root placeholder page exists only for the walking skeleton; production `/` remains routed to Next.js by Nginx.

@@ -293,7 +293,7 @@ fnm exec --using 26.13.1 -- cmd /c "npm run test:e2e -- e2e/performance.spec.ts"
 ## 11. Gaps and next layers
 
 - Phase 5 delivered component tests and API-client coverage; Phase 6 added learner component tests, Playwright R1 flows, and axe scans.
-- Phase 7 added production configuration checks, a local PostgreSQL restore drill, dependency/secret audits, AC-30 media validation, and the R1 gate. The gate is **not passed**: AC-21 (p75 LCP) and AC-25 (CI) remain unsatisfied; seven criteria are partial.
+- Phase 7 added production configuration checks, a local PostgreSQL restore drill, dependency/secret audits, AC-30 media validation, and the R1 gate. The gate is **not passed**: AC-21 (p75 LCP) remains unsatisfied; seven criteria are partial. GitHub Actions run `44268233115` passed backend, frontend, and secret-scan jobs.
 - p75 mobile LCP and real-device performance remain unmeasured; only a warm lab run is recorded.
 - Manual keyboard, screen-reader, and visual review remain open despite passing automated axe scans.
 - `npm audit` findings and the offline `next/font/google` build dependency remain open.

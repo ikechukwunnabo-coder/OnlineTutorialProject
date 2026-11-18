@@ -2,7 +2,7 @@
 
 **Gate date:** 2026-11-18
 **Status:** **NOT PASSED**
-**Reason:** Production deployment was not executed; AC-21 and AC-25 remain unsatisfied; seven criteria remain partial. AC-30 is now implemented and locally verified.
+**Reason:** Production deployment was not executed; AC-21 remains unsatisfied; seven criteria remain partial. AC-30 is implemented and AC-25 passed on GitHub Actions.
 
 This is the Phase 7 evidence table. It records what was actually run in this workspace. It does not claim production readiness from configuration files alone.
 
@@ -17,9 +17,9 @@ This is the Phase 7 evidence table. It records what was actually run in this wor
 | Production frontend build | `next build` with `API_INTERNAL_URL=http://127.0.0.1:8010/api/v1` |
 | Docker | CLI present; daemon unavailable; Compose stack not started |
 | PostgreSQL 18.7 / Redis 8.4.8 | Not available locally |
-| GitHub Actions | Not executed; no remote repository |
+| GitHub Actions | Executed: run `44268233115` on commit `bf20bd9`; backend, frontend, and secret-scan jobs passed |
 | Live email | Not executed; LocMem/console only |
-| Git | Repository initialised; **zero commits**; all files untracked |
+| Git | Committed and pushed to `origin/main`; CI validated the pushed workflow fix |
 
 ## 2. Phase 7 checks
 
@@ -49,7 +49,7 @@ This is the Phase 7 evidence table. It records what was actually run in this wor
 | Media validation (AC-30) | PASS | 27 backend tests cover upload extension/content-type/magic-byte/size checks, alt-text/decorative rules, strict YouTube/Vimeo URL parsing, API output, and admin inlines; Nginx `frame-src` allowlists only `www.youtube.com` and `player.vimeo.com` |
 | Content checklist | NOT RUN | Manual editorial checklist not completed |
 | Live email delivery | NOT RUN | No provider configured |
-| GitHub Actions | NOT RUN | No remote repository |
+| GitHub Actions | PASS | Run `44268233115` completed all three jobs; Secret scan, Backend lint/types/tests (PostgreSQL 18.7 + Redis 8.4.8), and Frontend checks passed |
 | p75 mobile LCP | NOT RUN | Only a warm lab run at 340ms and a cold outlier at 22.4s |
 | Manual keyboard/screen-reader/visual review | NOT RUN | Automated axe 9/9 passed; manual review remains open |
 
@@ -81,7 +81,7 @@ This is the Phase 7 evidence table. It records what was actually run in this wor
 | AC-22 | PASS | `check --deploy` clean; production dependency audits clean; dev-toolchain findings documented |
 | AC-23 | PASS | Health/readiness checks passed; email failure logging tested |
 | AC-24 | PARTIAL | Restore drill passed on PostgreSQL 17; PostgreSQL 18.7 production restore not executed |
-| AC-25 | **FAIL** | GitHub Actions workflow exists but has never run |
+| AC-25 | PASS | GitHub Actions run `44268233115` passed on commit `bf20bd9`; backend matrix used PostgreSQL 18.7 and Redis 8.4.8, frontend built successfully, and gitleaks passed |
 | AC-26 | PARTIAL | Counts pass (20/5/4/20); manual content checklist not completed |
 | AC-27 | PARTIAL | Repository secret scan clean; production images were not built or scanned |
 | AC-28 | PASS | Admin/API permission and audit-log tests |
@@ -90,35 +90,33 @@ This is the Phase 7 evidence table. It records what was actually run in this wor
 | AC-31 | PARTIAL | Backend Sentry is env-gated and JSON logging exists; frontend Sentry is not wired and log inspection is not exhaustive |
 | AC-32 | PASS | ADR/model review confirms locale prefixes remain possible without destructive migration |
 
-**Summary:** 23 PASS, 7 PARTIAL, 2 FAIL. R1 cannot be marked passed while AC-21 and AC-25 fail and production deployment evidence is unexecuted.
+**Summary:** 24 PASS, 7 PARTIAL, 1 FAIL. R1 cannot be marked passed while AC-21 fails and production deployment evidence is unexecuted.
 
 ## 4. Blocking items
 
 1. **Production environment evidence:** build and run the Compose stack on a Linux host; verify PostgreSQL 18.7, Redis 8.4.8, Nginx TLS, health checks, security headers, and memory use.
-2. **AC-25:** push to a remote and run GitHub Actions, including PostgreSQL/Redis services and the frontend job.
-3. **AC-21:** measure p75 mobile LCP on chapter pages with documented device/network conditions.
-4. **Manual accessibility/visual QA:** keyboard, screen-reader, contrast, and screenshot review.
-5. **Live email:** verify registration, verification, reset, and contact delivery with the chosen provider.
-6. **AC-24 production parity:** repeat the restore drill against PostgreSQL 18.7 and the production media volume.
-7. **AC-31:** wire frontend error tracking or explicitly accept backend-only observability.
-8. **Dev dependency findings:** accept the 18 dev-toolchain advisories or upgrade the affected toolchain (the suggested fix is breaking).
-9. **Commit approval:** no commit exists; the owner must review the Phase 7 changes.
+2. **AC-21:** measure p75 mobile LCP on chapter pages with documented device/network conditions.
+3. **Manual accessibility/visual QA:** keyboard, screen-reader, contrast, and screenshot review.
+4. **Live email:** verify registration, verification, reset, and contact delivery with the chosen provider.
+5. **AC-24 production parity:** repeat the restore drill against PostgreSQL 18.7 and the production media volume.
+6. **AC-31:** wire frontend error tracking or explicitly accept backend-only observability.
+7. **Dev dependency findings:** accept the 18 dev-toolchain advisories or upgrade the affected toolchain (the suggested fix is breaking).
+8. **CI follow-up:** GitHub Actions passes but emits Node 20 deprecation and `ubuntu-latest` migration warnings; upgrade action versions/pin runner versions when convenient.
 
 ## 5. What would change the gate to PASS
 
-- Both FAIL criteria resolved with recorded evidence.
+- AC-21 resolved with recorded p75 mobile LCP evidence.
 - The seven PARTIAL criteria either completed or explicitly accepted with owner sign-off.
-- Production Compose, Nginx/TLS, PostgreSQL 18.7, Redis 8.4.8, and GitHub Actions executed successfully.
-- Live email and p75 mobile LCP measured.
+- Production Compose, Nginx/TLS, PostgreSQL 18.7, and Redis 8.4.8 executed successfully.
+- Live email measured and verified.
 - Manual accessibility/visual review completed.
-- A reviewed commit created.
 
 ## 6. Owner decision requested
 
 Phase 7 is stopped at the gate. The next action requires an owner decision:
 
-- **revise:** supply the missing production environment access, AC-21/AC-25 evidence, or acceptance of specific partial criteria.
+- **revise:** supply the missing production environment access, AC-21 evidence, or acceptance of specific partial criteria.
 - **next:** proceed to R2 only if the owner explicitly accepts the R1 gate exceptions; otherwise R1 remains blocked.
 - **status:** request a current evidence summary.
 
-No production deployment has been claimed. No commit has been created.
+No production deployment has been claimed. The R1 implementation is committed and pushed to GitHub; CI passed on the pushed workflow fix.

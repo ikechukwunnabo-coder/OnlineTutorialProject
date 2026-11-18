@@ -1,8 +1,8 @@
 # Project Status — Ben Digital Solution
 
 **Last updated:** 2026-11-18
-**Current phase:** Phase 7 - R1 hardening and production deployment (local evidence complete; gate NOT PASSED)
-**Next phase:** Owner decision on R1 blockers and exceptions
+**Current phase:** Phase 7 - R1 hardening and production deployment (local evidence complete; CI passed; gate NOT PASSED)
+**Next phase:** Owner decision on remaining R1 blockers and exceptions
 **Tooling mode:** Agentic (files and commands executable in this workspace)
 **Web access:** Yes (version checks performed 2026-11-12)
 
@@ -41,7 +41,7 @@ This is the single living status document. Phase completion records are appended
 | 4 — Backend authentication and accounts | Complete (approved 2026-11-15) | 13 auth/account endpoints, 131 tests at 93.61% coverage on SQLite and 93.34% on PostgreSQL 17.0, OpenAPI validation, session/CSRF/throttle tests |
 | 5 — Frontend foundation, public pages, and auth screens | Complete (awaiting approval) | Next.js 16.4.6 app, typed API client, public pages, auth screens/session restoration, 18 Vitest tests, lint/typecheck/build gates, live dev proxy checks |
 | 6 - Frontend learner features and E2E | Complete (advanced 2026-11-18) | Learner bookmark/progress UI, dashboard, Playwright R1 suite (17 passed, 1 opt-in skipped), axe 9/9, production build 49 pages, live revalidation webhook verified, backend 133 tests at 93.43% |
-| 7 - R1 hardening and production deployment | In progress - gate NOT PASSED | Production assets and local checks complete; AC-30 implemented; 23/32 criteria pass, 7 partial, 2 fail (AC-21, AC-25); Docker/PG18.7/Redis8.4.8/CI/live email unexecuted. See `docs/R1_GATE.md` |
+| 7 - R1 hardening and production deployment | In progress - gate NOT PASSED | Production assets and local checks complete; AC-30 implemented; 24/32 criteria pass, 7 partial, 1 fail (AC-21); CI passed on GitHub Actions; Docker/PG18.7/Redis8.4.8/live email unexecuted. See `docs/R1_GATE.md` |
 | 8a–8d — R2 build | Not started (blocked until R1 live) | — |
 | 9 — R2 release gate | Not started | — |
 | 10 — R3 build | Not started (blocked until R2 live) | — |
@@ -219,7 +219,7 @@ Traceability: every R1 functional requirement (F-01–F-28) and every R1 non-fun
 | AC-22 | `manage.py check --deploy` findings are documented and resolved or explicitly accepted; dependency audit shows no critical findings. | Phase 7 evidence |
 | AC-23 | Health and readiness endpoints report correct status; email failure is logged without breaking the request. | API test |
 | AC-24 | A backup can be restored into a clean environment and verified by querying known content. | Phase 7 drill |
-| AC-25 | CI runs lint, type checks, backend and frontend tests, production builds, dependency audits, and OpenAPI validation on every pull request. | CI log evidence |
+| AC-25 | CI runs lint, type checks, backend and frontend tests, production builds, dependency audits, and OpenAPI validation on every pull request. | GitHub Actions run `44268233115` |
 | AC-26 | At least 20 real published chapters across at least 5 tutorials and 4 categories pass the content checklist. | Content audit |
 | AC-27 | No secrets, credentials, or production data are present in the repository or images. | Secret scan + review |
 | AC-28 | An administrator can create, edit, publish, unpublish, and archive categories, tutorials, chapters, and code examples; role permissions are enforced on the backend; administrative actions are recorded in the audit log. | Admin/API permission tests |
@@ -352,7 +352,7 @@ Full register: `docs/RISK_REGISTER.md`. Current highest risks:
 4. Low-budget VPS capacity for Next.js + Django + PostgreSQL + Redis.
 5. Auth/email misconfiguration causing account lockout or enumeration.
 6. AC-30 media requirements are implemented locally, but production media serving and Nginx `frame-src` behaviour remain untested on a live host.
-7. Production Compose/Nginx/PostgreSQL 18.7/Redis 8.4.8/CI/live email are unexecuted; R1 is not passed.
+7. Production Compose/Nginx/PostgreSQL 18.7/Redis 8.4.8/live email are unexecuted; CI passed; R1 is not passed.
 
 ## 13. Assumptions register
 
@@ -1228,7 +1228,7 @@ Implement learner bookmarks and reading progress, the protected learner dashboar
 
 ## 23. Phase 7 - R1 hardening and production deployment (2026-11-18)
 
-**Status:** Local evidence complete; **R1 gate NOT PASSED**. No commit created. See `docs/R1_GATE.md` for the criterion-level pass/fail table and `docs/RUNBOOK.md` for operations.
+**Status:** Local evidence complete; code committed and pushed; GitHub Actions passed; **R1 gate NOT PASSED**. See `docs/R1_GATE.md` for the criterion-level pass/fail table and `docs/RUNBOOK.md` for operations.
 
 ### 23.1 Objective and scope
 
@@ -1299,7 +1299,7 @@ Prepare the R1 production deployment: single-domain Nginx/TLS topology, producti
 | `GET /api/v1/health/` and `/api/v1/ready/` | Both `200` on QA settings |
 | Docker/Compose runtime | **Not run**; Docker daemon unavailable |
 | Nginx runtime/TLS | **Not run**; no Nginx binary and no Docker daemon |
-| GitHub Actions | **Not run**; no remote repository |
+| GitHub Actions | **PASS**; run `44268233115` on commit `bf20bd9` completed backend, frontend, and secret-scan jobs |
 | Live email | **Not run**; LocMem/console only |
 
 ### 23.6 Tests run and actual outcomes
@@ -1308,18 +1308,18 @@ Prepare the R1 production deployment: single-domain Nginx/TLS topology, producti
 - **Frontend:** 20 Vitest tests, clean ESLint/typecheck, and a 49-page standalone production build after the QA API was migrated and restarted.
 - **Backup/restore:** a PostgreSQL 17 custom-format dump was restored into a clean database and verified by querying known content.
 - **Security:** production dependency audit clean; repository secret scan clean; full frontend audit still reports dev-toolchain advisories.
-- **Not run:** Docker Compose, Nginx/TLS, PostgreSQL 18.7, Redis 8.4.8, GitHub Actions, live email, p75 LCP, and manual accessibility/visual review.
+- **Not run:** Docker Compose, Nginx/TLS, PostgreSQL 18.7, Redis 8.4.8, live email, p75 LCP, and manual accessibility/visual review. GitHub Actions passed.
 
 ### 23.7 Known limitations and risks
 
-- The R1 gate is **not passed**: AC-21 (p75 LCP) and AC-25 (CI) fail; seven criteria are partial.
+- The R1 gate is **not passed**: AC-21 (p75 LCP) fails; seven criteria are partial. AC-25 passed on GitHub Actions.
 - AC-30 is implemented and locally verified through `ChapterImage`, `VideoEmbed`, strict validators, admin inlines, API output, frontend rendering, and an allowlisted Nginx `frame-src`; production media serving remains untested.
-- Production Compose/Nginx/TLS, PostgreSQL 18.7, Redis 8.4.8, GitHub Actions, and live email are unexecuted.
+- Production Compose/Nginx/TLS, PostgreSQL 18.7, Redis 8.4.8, and live email are unexecuted; GitHub Actions passed with Node 20 deprecation and `ubuntu-latest` migration warnings.
 - The local restore drill used PostgreSQL 17 and demo content, not the production database or PostgreSQL 18.7.
 - Frontend Sentry is not wired; backend Sentry is env-gated.
 - Full `npm audit` reports 18 dev-toolchain findings; the suggested fix is breaking.
 - Manual keyboard/screen-reader/visual review and p75 field LCP remain open.
-- No commit exists; owner review is required.
+- The implementation is committed and pushed to `origin/main`; no production deployment has been claimed.
 
 ### 23.8 Changes to previously agreed architecture
 
@@ -1332,10 +1332,10 @@ Prepare the R1 production deployment: single-domain Nginx/TLS topology, producti
 ### 23.9 Next phase scope (owner decision required)
 
 1. Provide a Linux/Docker host and run the production Compose stack, Nginx/TLS, PostgreSQL 18.7, Redis 8.4.8, smoke test, memory measurement, and AC-30 media serving checks.
-2. Push to a remote and execute GitHub Actions (AC-25).
-3. Measure p75 mobile LCP (AC-21) and complete manual accessibility/visual review.
-4. Verify live transactional email and repeat the restore drill against PostgreSQL 18.7.
-5. Decide whether frontend Sentry is required for AC-31 and whether to accept or upgrade the dev-toolchain audit findings.
-6. Review and commit the Phase 7 changes; then decide whether to proceed to R2.
+2. Measure p75 mobile LCP (AC-21) and complete manual accessibility/visual review.
+3. Verify live transactional email and repeat the restore drill against PostgreSQL 18.7.
+4. Decide whether frontend Sentry is required for AC-31 and whether to accept or upgrade the dev-toolchain audit findings.
+5. Address GitHub Actions deprecation/migration warnings by upgrading action versions or pinning runner labels.
+6. Decide whether to proceed to R2 after the owner accepts the remaining R1 exceptions.
 
 **Reply `revise: <feedback>` with the missing environment access or exception decisions, or `status` for the current evidence summary.**

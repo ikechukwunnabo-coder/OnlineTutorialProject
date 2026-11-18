@@ -153,7 +153,7 @@ Set-Location backend
 
 CI (`.github/workflows/ci.yml`) runs Ruff, formatting, mypy, migration drift check, Django system checks, the production `check --deploy` baseline, OpenAPI schema validation, a dependency audit, and pytest against PostgreSQL 18.7 and Redis 8.4.8, plus a secret scan. The frontend job activates automatically when `frontend/package.json` exists.
 
-Current local evidence: **162 backend tests at 93.28% coverage**, **20 frontend tests**, a **49-page standalone production build**, clean Ruff/ESLint/typecheck, clean production dependency audits, AC-30 media validation tests, and a local PostgreSQL 17 restore drill. CI has not executed, so AC-25 is still open.
+Current local evidence: **162 backend tests at 93.28% coverage**, **20 frontend tests**, a **49-page standalone production build**, clean Ruff/ESLint/typecheck, clean production dependency audits, AC-30 media validation tests, a local PostgreSQL 17 restore drill, and a passing GitHub Actions run (`44268233115`) on PostgreSQL 18.7 and Redis 8.4.8. AC-21 remains open.
 
 Local tests default to in-memory SQLite unless `DATABASE_URL` is set. Run them against PostgreSQL (Compose or CI) before relying on database-specific behaviour.
 
