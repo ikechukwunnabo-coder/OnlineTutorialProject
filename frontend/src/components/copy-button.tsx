@@ -48,7 +48,7 @@ export function CopyButton({ text, label = "Copy code" }: { text: string; label?
     <button
       type="button"
       onClick={handleCopy}
-      className="inline-flex items-center gap-1.5 border border-white/30 bg-white/10 px-2 py-1 font-mono text-[0.68rem] text-white transition-colors hover:bg-white/20"
+      className="inline-flex items-center gap-1.5 border border-white/30 bg-white/10 px-2 py-1 meta-text text-white transition-colors hover:bg-white/20"
       aria-label={message}
     >
       <svg

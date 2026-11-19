@@ -1,6 +1,6 @@
 export default function ConsoleLoading() {
   return (
-    <section aria-busy="true" aria-label="Loading console overview">
+    <section aria-busy="true" aria-live="polite" aria-label="Loading console overview">
       <div className="border-b border-line-strong pb-6">
         <div className="skeleton h-3 w-28" />
         <div className="skeleton mt-4 h-10 w-72 max-w-full" />

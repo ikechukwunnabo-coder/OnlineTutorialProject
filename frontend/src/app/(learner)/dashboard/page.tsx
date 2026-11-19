@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { EmptyState } from "@/components/empty-state";
+import { Notice } from "@/components/ui/notice";
 import { ApiError } from "@/lib/api/errors";
 import { getBookmarks, getCurrentUser, getProgress } from "@/lib/api/server";
 import type { BookmarkPage, ProgressOverview } from "@/lib/api/types";
@@ -44,19 +45,21 @@ export default async function DashboardPage() {
     return (
       <section className="grid-paper">
         <div className="container-page py-12 sm:py-16">
-          <div className="mx-auto max-w-2xl border-2 border-coral bg-[#fff0ea] p-6">
+          <div className="mx-auto max-w-2xl">
             <p className="eyebrow">My learning</p>
             <h1 className="display-title mt-4 text-4xl sm:text-5xl">Verify your email first.</h1>
-            <p className="mt-4 text-muted">
-              Bookmarks and reading progress are available after you verify your email address.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/verify-email" className="button-primary">
-                Verify email
-              </Link>
-              <Link href="/profile" className="button-secondary">
-                Go to profile
-              </Link>
+            <div className="mt-6">
+              <Notice tone="warning" title="Verification is required">
+                Bookmarks and reading progress are available after you verify your email address.
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Link href="/verify-email" className="button-primary">
+                    Verify email
+                  </Link>
+                  <Link href="/profile" className="button-secondary">
+                    Go to profile
+                  </Link>
+                </div>
+              </Notice>
             </div>
           </div>
         </div>
@@ -97,7 +100,7 @@ export default async function DashboardPage() {
           <section aria-labelledby="overall-progress" className="card-index p-5">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="font-mono text-xs text-cobalt">Overall progress</p>
+                <p className="meta-text text-cobalt">Overall progress</p>
                 <h2 id="overall-progress" className="mt-2 font-display text-2xl font-bold tracking-[-0.04em]">
                   {progress.overall.percent_complete}% complete
                 </h2>
@@ -128,7 +131,7 @@ export default async function DashboardPage() {
           <section aria-labelledby="bookmark-summary" className="card-index p-5">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="font-mono text-xs text-cobalt">Saved chapters</p>
+                <p className="meta-text text-cobalt">Saved chapters</p>
                 <h2 id="bookmark-summary" className="mt-2 font-display text-2xl font-bold tracking-[-0.04em]">
                   {formatCount(bookmarks.count, "bookmark")}
                 </h2>
@@ -166,7 +169,7 @@ export default async function DashboardPage() {
                         >
                           {item.tutorial.title}
                         </Link>
-                        <p className="mt-1 font-mono text-xs text-muted">
+                        <p className="mt-1 meta-text text-muted">
                           {item.completed_chapters} of {item.total_chapters} chapters ·{" "}
                           {formatDate(item.last_activity_at)}
                         </p>
@@ -200,7 +203,7 @@ export default async function DashboardPage() {
                   Bookmarks.
                 </h2>
               </div>
-              <p className="font-mono text-xs text-muted">{bookmarks.count} total</p>
+              <p className="meta-text text-muted">{bookmarks.count} total</p>
             </div>
 
             {bookmarks.results.length > 0 ? (
@@ -211,7 +214,7 @@ export default async function DashboardPage() {
                       href={`/tutorials/${bookmark.chapter.tutorial.slug}/${bookmark.chapter.slug}`}
                       className="group block no-underline"
                     >
-                      <p className="font-mono text-[0.68rem] text-cobalt">
+                      <p className="meta-text text-cobalt">
                         {bookmark.chapter.tutorial.title}
                       </p>
                       <p className="mt-1 font-display text-xl font-bold tracking-[-0.035em] text-ink group-hover:text-cobalt">

@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { ConsoleDeleteButton } from "@/components/console/console-delete-button";
+import { Notice } from "@/components/ui/notice";
 import { createConsoleChapter, updateConsoleChapter } from "@/lib/api/browser";
 import { ApiError, fieldErrors } from "@/lib/api/errors";
 import type { ConsoleChapter, ConsoleChapterInput } from "@/lib/api/types";
@@ -38,6 +39,7 @@ export function ConsoleChapterForm({
 }) {
   const router = useRouter();
   const [status, setStatus] = useState("");
+  const [formError, setFormError] = useState("");
   const {
     register,
     handleSubmit,
@@ -59,6 +61,7 @@ export function ConsoleChapterForm({
 
   async function onSubmit(values: ChapterValues) {
     setStatus("");
+    setFormError("");
     const input: ConsoleChapterInput = {
       tutorial: values.tutorial,
       title: values.title,
@@ -80,7 +83,9 @@ export function ConsoleChapterForm({
       router.push("/console/content");
       router.refresh();
     } catch (error) {
-      setStatus(error instanceof ApiError ? error.message : "The chapter could not be saved.");
+      const message =
+        error instanceof ApiError ? error.message : "The chapter could not be saved.";
+      setFormError(message);
       for (const [field, message] of Object.entries(fieldErrors(error))) {
         if (field in values) {
           setError(field as keyof ChapterValues, { message });
@@ -91,101 +96,193 @@ export function ConsoleChapterForm({
 
   if (tutorials.length === 0) {
     return (
-      <div className="mt-8 border-l-4 border-coral bg-[#fff0ea] px-5 py-4">
-        <p className="font-mono text-xs text-coral-text">No tutorials yet</p>
-        <p className="mt-1 text-sm">Create a tutorial before adding chapters.</p>
-        <Link href="/console/content/tutorials/new" className="button-primary mt-4">
-          Create tutorial
-        </Link>
+      <div className="mt-8">
+        <Notice tone="warning" title="No tutorials yet" role="status">
+          Create a tutorial before adding chapters.
+          <Link href="/console/content/tutorials/new" className="button-primary mt-4">
+            Create tutorial
+          </Link>
+        </Notice>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-8 space-y-6">
-      <div className="grid gap-5 sm:grid-cols-2">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-8 space-y-8">
+      {formError ? (
         <div>
-          <label htmlFor="chapter-title" className="field-label">
-            Title
-          </label>
-          <input id="chapter-title" className="field-input" {...register("title")} />
-          {errors.title ? <p className="field-error">{errors.title.message}</p> : null}
+          <Notice tone="error" role="alert" title="This chapter was not saved">
+            {formError}
+          </Notice>
         </div>
-        <div>
-          <label htmlFor="chapter-slug" className="field-label">
-            Slug
-          </label>
-          <input id="chapter-slug" className="field-input" {...register("slug")} />
-          {errors.slug ? <p className="field-error">{errors.slug.message}</p> : null}
-        </div>
-      </div>
+      ) : null}
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label htmlFor="chapter-tutorial" className="field-label">
-            Tutorial
-          </label>
-          <select id="chapter-tutorial" className="field-input" {...register("tutorial", { setValueAs: Number })}>
-            {tutorials.map((tutorial) => (
-              <option key={tutorial.id} value={tutorial.id}>
-                {tutorial.title}
-              </option>
-            ))}
-          </select>
-          {errors.tutorial ? <p className="field-error">{errors.tutorial.message}</p> : null}
+      <fieldset className="form-section border-t-0 pt-0">
+        <legend className="font-display text-xl font-bold tracking-[-0.03em]">Basics</legend>
+        <div className="form-grid mt-4">
+          <div>
+            <label htmlFor="chapter-title" className="field-label">
+              Title <span className="field-required">*</span>
+              <span className="sr-only"> required</span>
+            </label>
+            <input
+              id="chapter-title"
+              className="field-input"
+              aria-invalid={errors.title ? true : undefined}
+              aria-describedby={errors.title ? "chapter-title-error" : undefined}
+              {...register("title")}
+            />
+            {errors.title ? (
+              <p id="chapter-title-error" className="field-error">
+                {errors.title.message}
+              </p>
+            ) : null}
+          </div>
+          <div>
+            <label htmlFor="chapter-slug" className="field-label">
+              Slug
+            </label>
+            <input
+              id="chapter-slug"
+              className="field-input"
+              aria-invalid={errors.slug ? true : undefined}
+              aria-describedby={errors.slug ? "chapter-slug-error" : undefined}
+              {...register("slug")}
+            />
+            {errors.slug ? (
+              <p id="chapter-slug-error" className="field-error">
+                {errors.slug.message}
+              </p>
+            ) : null}
+          </div>
         </div>
-        <div>
-          <label htmlFor="chapter-order" className="field-label">
-            Chapter order
+
+        <div className="mt-5">
+          <label htmlFor="chapter-summary" className="field-label">
+            Summary
           </label>
-          <input id="chapter-order" type="number" min={1} className="field-input" {...register("order", { setValueAs: Number })} />
-          {errors.order ? <p className="field-error">{errors.order.message}</p> : null}
+          <textarea
+            id="chapter-summary"
+            rows={2}
+            className="field-input"
+            aria-invalid={errors.summary ? true : undefined}
+            aria-describedby={errors.summary ? "chapter-summary-error" : undefined}
+            {...register("summary")}
+          />
+          <p className="field-hint">Used in chapter lists and page descriptions.</p>
+          {errors.summary ? (
+            <p id="chapter-summary-error" className="field-error">
+              {errors.summary.message}
+            </p>
+          ) : null}
         </div>
-      </div>
+      </fieldset>
 
-      <div>
-        <label htmlFor="chapter-summary" className="field-label">
-          Summary
-        </label>
-        <textarea id="chapter-summary" rows={2} className="field-input" {...register("summary")} />
-        {errors.summary ? <p className="field-error">{errors.summary.message}</p> : null}
-      </div>
+      <fieldset className="form-section">
+        <legend className="font-display text-xl font-bold tracking-[-0.03em]">
+          Lesson structure
+        </legend>
+        <div className="form-grid mt-4">
+          <div>
+            <label htmlFor="chapter-tutorial" className="field-label">
+              Tutorial <span className="field-required">*</span>
+              <span className="sr-only"> required</span>
+            </label>
+            <select
+              id="chapter-tutorial"
+              className="field-input"
+              aria-invalid={errors.tutorial ? true : undefined}
+              aria-describedby={errors.tutorial ? "chapter-tutorial-error" : undefined}
+              {...register("tutorial", { setValueAs: Number })}
+            >
+              {tutorials.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.title}
+                </option>
+              ))}
+            </select>
+            {errors.tutorial ? (
+              <p id="chapter-tutorial-error" className="field-error">
+                {errors.tutorial.message}
+              </p>
+            ) : null}
+          </div>
+          <div>
+            <label htmlFor="chapter-order" className="field-label">
+              Chapter order <span className="field-required">*</span>
+              <span className="sr-only"> required</span>
+            </label>
+            <input
+              id="chapter-order"
+              type="number"
+              min={1}
+              className="field-input"
+              aria-invalid={errors.order ? true : undefined}
+              aria-describedby={errors.order ? "chapter-order-error" : undefined}
+              {...register("order", { setValueAs: Number })}
+            />
+            {errors.order ? (
+              <p id="chapter-order-error" className="field-error">
+                {errors.order.message}
+              </p>
+            ) : null}
+          </div>
+        </div>
 
-      <div>
-        <label htmlFor="chapter-content" className="field-label">
-          Lesson content
-        </label>
-        <textarea id="chapter-content" rows={12} className="field-input resize-y font-mono text-sm" {...register("content")} />
-        <p className="mt-1.5 text-xs text-muted">Markdown is supported. Reading time updates when you save.</p>
-        {errors.content ? <p className="field-error">{errors.content.message}</p> : null}
-      </div>
+        <div className="mt-5">
+          <label htmlFor="chapter-content" className="field-label">
+            Lesson content
+          </label>
+          <textarea
+            id="chapter-content"
+            rows={12}
+            className="field-input resize-y font-mono text-sm"
+            aria-invalid={errors.content ? true : undefined}
+            aria-describedby={errors.content ? "chapter-content-error" : "chapter-content-hint"}
+            {...register("content")}
+          />
+          <p id="chapter-content-hint" className="field-hint">
+            Markdown is supported. Reading time updates when you save.
+          </p>
+          {errors.content ? (
+            <p id="chapter-content-error" className="field-error">
+              {errors.content.message}
+            </p>
+          ) : null}
+        </div>
+      </fieldset>
 
       {canPublish ? (
-        <div className="grid gap-5 border-t border-line-strong pt-6 sm:grid-cols-2">
-          <div>
-            <label htmlFor="chapter-status" className="field-label">
-              Publication state
+        <fieldset className="form-section">
+          <legend className="font-display text-xl font-bold tracking-[-0.03em]">
+            Publication
+          </legend>
+          <div className="form-grid mt-4">
+            <div>
+              <label htmlFor="chapter-status" className="field-label">
+                Publication state
+              </label>
+              <select id="chapter-status" className="field-input" {...register("status")}>
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+            <label className="flex items-center gap-3 self-end text-sm">
+              <input type="checkbox" className="size-4 accent-coral" {...register("is_demo")} />
+              Keep this chapter hidden from readers
             </label>
-            <select id="chapter-status" className="field-input" {...register("status")}>
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-              <option value="archived">Archived</option>
-            </select>
           </div>
-          <label className="flex items-center gap-3 self-end text-sm">
-            <input type="checkbox" className="size-4 accent-coral" {...register("is_demo")} />
-            Keep this chapter hidden from readers
-          </label>
-        </div>
+        </fieldset>
       ) : null}
 
       {status ? (
-        <div role="status" className="alert-success">
+        <Notice tone="success" role="status" title="Saved">
           {status}
-        </div>
+        </Notice>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-4 border-t border-line-strong pt-6">
+      <div className="flex flex-wrap items-center gap-4 border-t border-line pt-6">
         <button type="submit" className="button-primary" disabled={isSubmitting}>
           {isSubmitting ? "Saving…" : chapter ? "Save changes" : "Create chapter"}
         </button>

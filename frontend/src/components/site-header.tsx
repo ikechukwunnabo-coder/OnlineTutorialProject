@@ -1,9 +1,14 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 import { AccountNav } from "./account-nav";
 import { Logo } from "./logo";
 
 const navItems = [
+  { href: "/", label: "Home" },
   { href: "/tutorials", label: "Tutorials" },
   { href: "/categories", label: "Categories" },
   { href: "/search", label: "Search" },
@@ -11,50 +16,97 @@ const navItems = [
 ];
 
 export function SiteHeader() {
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  function isActive(href: string) {
+    if (href === "/") {
+      return pathname === "/";
+    }
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
+
   return (
     <header className="sticky top-0 z-40 border-b border-line/80 bg-paper/90 backdrop-blur-md">
       <div className="container-page flex h-[4.6rem] items-center justify-between gap-5">
         <Logo />
 
-        <nav aria-label="Main navigation" className="hidden items-center gap-6 md:flex">
+        <nav aria-label="Main navigation" className="hidden items-center gap-5 lg:flex">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm font-bold text-ink no-underline decoration-coral decoration-2 underline-offset-4 hover:underline"
+              aria-current={isActive(item.href) ? "page" : undefined}
+              className={`border-b-2 py-1 text-sm font-bold no-underline transition-colors ${
+                isActive(item.href)
+                  ? "border-coral text-ink"
+                  : "border-transparent text-muted hover:border-line-strong hover:text-ink"
+              }`}
             >
               {item.label}
             </Link>
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <AccountNav />
-          <Link href="/contact" className="button-secondary hidden text-sm lg:inline-flex">
+          <Link href="/tutorials" className="button-primary hidden text-sm sm:inline-flex">
+            Start learning
+          </Link>
+          <Link href="/contact" className="button-secondary hidden text-sm xl:inline-flex">
             Get in touch
           </Link>
 
-          <details className="relative md:hidden">
-            <summary className="button-secondary cursor-pointer list-none text-sm [&::-webkit-details-marker]:hidden">
-              Menu
-            </summary>
-            <nav
-              aria-label="Mobile navigation"
-              className="absolute right-0 top-[calc(100%+0.7rem)] w-56 border-2 border-ink bg-paper-raised p-2 shadow-[5px_5px_0_0_var(--ink)]"
-            >
-              {[...navItems, { href: "/contact", label: "Contact" }].map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="block border-b border-line/70 px-3 py-2.5 text-sm font-bold text-ink no-underline last:border-b-0 hover:bg-lime"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          </details>
+          <button
+            type="button"
+            aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-navigation"
+            className="button-secondary min-w-[4.75rem] px-3 text-sm lg:hidden"
+            onClick={() => setMobileOpen((value) => !value)}
+          >
+            {mobileOpen ? "Close" : "Menu"}
+          </button>
         </div>
       </div>
+
+      {mobileOpen ? (
+        <nav
+          id="mobile-navigation"
+          aria-label="Mobile navigation"
+          className="border-t border-line bg-paper-raised shadow-[0_16px_30px_-24px_var(--ink)] lg:hidden"
+        >
+          <div className="container-page grid gap-1 py-3">
+            {[...navItems, { href: "/contact", label: "Contact" }].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={isActive(item.href) ? "page" : undefined}
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center justify-between border-l-4 px-3 py-2.5 text-sm font-bold no-underline ${
+                  isActive(item.href)
+                    ? "border-coral bg-surface text-ink"
+                    : "border-transparent text-muted hover:bg-surface hover:text-ink"
+                }`}
+              >
+                {item.label}
+                {isActive(item.href) ? (
+                  <span className="meta-text text-coral" aria-hidden="true">
+                    Current
+                  </span>
+                ) : null}
+              </Link>
+            ))}
+            <Link
+              href="/tutorials"
+              onClick={() => setMobileOpen(false)}
+              className="button-primary mt-2 text-sm"
+            >
+              Start learning
+            </Link>
+          </div>
+        </nav>
+      ) : null}
     </header>
   );
 }

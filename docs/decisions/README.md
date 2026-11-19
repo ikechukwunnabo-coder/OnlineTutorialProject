@@ -15,6 +15,7 @@ This folder is the single decision log. Each significant decision gets a numbere
 | [0009](0009-single-domain-topology.md) | Single-domain topology with `/api/` reverse proxy | Accepted | 2026-11-13 |
 | [0010](0010-api-versioning-and-errors.md) | API versioning and consistent error envelope | Accepted | 2026-11-13 |
 | [0011](0011-nextjs-editorial-console.md) | Next.js editorial console for content CRUD | Accepted | 2026-11-18 |
+| [0012](0012-semantic-ui-design-system.md) | Semantic, token-based UI design system | Accepted | 2026-11-19 |
 
 ## Conventions
 

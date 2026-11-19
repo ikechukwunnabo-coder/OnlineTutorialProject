@@ -24,7 +24,7 @@ export default function PrivacyPage() {
           />
           <p className="eyebrow mt-8">Privacy</p>
           <h1 className="display-title mt-4 text-5xl sm:text-6xl">What we collect, and why.</h1>
-          <p className="mt-4 font-mono text-xs text-muted">Last updated 15 November 2026</p>
+          <p className="mt-4 meta-text text-muted">Last updated 15 November 2026</p>
         </div>
       </section>
 

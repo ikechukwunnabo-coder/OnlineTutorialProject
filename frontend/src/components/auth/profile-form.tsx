@@ -96,7 +96,7 @@ export function ProfileForm({ user }: { user: UserProfile }) {
           <h1 className="display-title mt-3 text-4xl sm:text-5xl">{user.display_name}</h1>
         </div>
         <span
-          className={`border px-2.5 py-1 font-mono text-[0.65rem] uppercase tracking-[0.12em] ${
+          className={`border px-2.5 py-1 meta-text uppercase tracking-[0.12em] ${
             user.email_verified
               ? "border-ink/40 bg-mint/30 text-ink"
               : "border-coral/50 bg-coral/10 text-coral"
@@ -108,15 +108,15 @@ export function ProfileForm({ user }: { user: UserProfile }) {
 
       <dl className="mt-6 grid gap-4 border-y border-line py-5 text-sm sm:grid-cols-3">
         <div>
-          <dt className="font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted">Email</dt>
+          <dt className="meta-text uppercase tracking-[0.12em] text-muted">Email</dt>
           <dd className="mt-1 break-all font-bold text-ink">{user.email}</dd>
         </div>
         <div>
-          <dt className="font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted">Role</dt>
+          <dt className="meta-text uppercase tracking-[0.12em] text-muted">Role</dt>
           <dd className="mt-1 font-bold capitalize text-ink">{user.role}</dd>
         </div>
         <div>
-          <dt className="font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted">
+          <dt className="meta-text uppercase tracking-[0.12em] text-muted">
             Joined
           </dt>
           <dd className="mt-1 font-bold text-ink">{formatDate(user.date_joined)}</dd>

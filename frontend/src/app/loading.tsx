@@ -9,7 +9,7 @@ export default function Loading() {
           <div key={index} className="skeleton h-52" />
         ))}
       </div>
-      <p className="mt-8 font-mono text-xs text-muted">Loading the library…</p>
+      <p className="mt-8 meta-text text-muted">Loading the library…</p>
     </div>
   );
 }

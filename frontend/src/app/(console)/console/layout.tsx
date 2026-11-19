@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 
 import { ConsoleIcon } from "@/components/console/console-icon";
 import { ConsoleNav } from "@/components/console/console-nav";
+import { Notice } from "@/components/ui/notice";
 import { getCurrentUser } from "@/lib/api/server";
 import { canAccessConsole } from "@/lib/console";
 import { pageMetadata } from "@/lib/seo";
@@ -26,17 +27,17 @@ function AccessDenied({ displayName }: { displayName: string }) {
   return (
     <section className="grid-paper">
       <div className="container-page py-12 sm:py-16">
-        <div className="max-w-2xl border-2 border-coral bg-[#fff0ea] p-6">
+        <div className="max-w-2xl">
           <p className="eyebrow">Console</p>
           <h1 className="display-title mt-4 text-4xl">This desk is for the editorial team.</h1>
-          <p className="mt-4 text-muted">
-            {displayName}, your account can learn and manage its own profile, but it cannot open
-            the publishing console.
-          </p>
           <div className="mt-6">
-            <Link href="/dashboard" className="button-secondary">
-              Back to my learning
-            </Link>
+            <Notice tone="warning" title="Access is limited">
+              {displayName}, your account can learn and manage its own profile, but it cannot open
+              the publishing console.
+              <Link href="/dashboard" className="button-secondary mt-4 text-sm">
+                Back to my learning
+              </Link>
+            </Notice>
           </div>
         </div>
       </div>
@@ -58,25 +59,25 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
   return (
     <div className="border-y border-line-strong bg-paper-raised">
       <div className="mx-auto grid w-full max-w-[1440px] lg:grid-cols-[260px_minmax(0,1fr)]">
-        <aside className="border-b border-line-strong bg-ink px-5 py-6 text-paper lg:border-b-0 lg:border-r">
+        <aside className="border-b border-line-strong bg-console-rail px-5 py-6 text-on-console lg:border-b-0 lg:border-r">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="font-display text-xl font-bold tracking-tight">The desk</p>
-              <p className="mt-1 font-mono text-xs text-mint">editorial console</p>
+              <p className="meta-text mt-1 text-lime">Editorial console</p>
             </div>
-            <span className="border border-line-strong px-2 py-1 font-mono text-[0.65rem] text-lime">
+            <span className="status-chip border-on-console/30 text-on-console">
               {roleLabel(session.user.role)}
             </span>
           </div>
 
           <ConsoleNav />
 
-          <div className="mt-10 border-t border-line-strong pt-5">
+          <div className="mt-10 border-t border-on-console/20 pt-5">
             <p className="truncate text-sm font-bold">{session.user.display_name}</p>
-            <p className="mt-1 truncate font-mono text-xs text-paper/60">{session.user.email}</p>
+            <p className="meta-text mt-1 truncate text-on-console/60">{session.user.email}</p>
             <Link
               href="/"
-              className="mt-5 inline-flex items-center gap-2 text-sm text-mint no-underline hover:text-paper"
+              className="mt-5 inline-flex items-center gap-2 text-sm text-lime no-underline hover:text-on-console"
             >
               <ConsoleIcon name="back" className="size-4" />
               Back to the site

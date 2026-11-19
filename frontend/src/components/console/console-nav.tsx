@@ -23,6 +23,7 @@ export function ConsoleNav() {
 
   return (
     <nav aria-label="Console sections" className="mt-8">
+      <p className="meta-text mb-3 text-on-console/50">Workspace</p>
       <ul className="space-y-1">
         {navItems.map((item) => {
           const available = item.available !== false;
@@ -34,7 +35,7 @@ export function ConsoleNav() {
                 <Link
                   href={item.href ?? "#"}
                   aria-current={current ? "page" : undefined}
-                  className="flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-paper/80 no-underline transition-colors hover:bg-white/10 hover:text-paper aria-[current=page]:bg-lime aria-[current=page]:text-ink"
+                  className="flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-on-console/80 no-underline transition-colors hover:bg-on-console/10 hover:text-on-console aria-[current=page]:bg-lime aria-[current=page]:text-on-lime"
                 >
                   <ConsoleIcon name={item.icon} className="size-4 shrink-0" />
                   {item.label}
@@ -42,11 +43,11 @@ export function ConsoleNav() {
               ) : (
                 <span
                   aria-disabled="true"
-                  className="flex items-center gap-3 px-3 py-2.5 text-sm text-paper/40"
+                  className="flex items-center gap-3 px-3 py-2.5 text-sm text-on-console/40"
                 >
                   <ConsoleIcon name={item.icon} className="size-4 shrink-0" />
                   {item.label}
-                  <span className="ml-auto font-mono text-[0.6rem]">soon</span>
+                  <span className="meta-text ml-auto">soon</span>
                 </span>
               )}
             </li>

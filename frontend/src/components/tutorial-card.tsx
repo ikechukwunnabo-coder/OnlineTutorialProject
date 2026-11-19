@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import type { TutorialListItem } from "@/lib/api/types";
-import { formatCount, formatReadingTime } from "@/lib/format";
+import { formatCount, formatDate, formatReadingTime } from "@/lib/format";
 
 import { DifficultyBadge } from "./difficulty-badge";
 
@@ -19,11 +19,11 @@ export function TutorialCard({
         className="grid gap-4 py-6 no-underline transition-colors hover:bg-paper-raised sm:grid-cols-[3.2rem_1fr_auto] sm:gap-5"
       >
         {typeof index === "number" ? (
-          <span className="font-mono text-xs text-muted" aria-hidden="true">
+          <span className="meta-text text-muted" aria-hidden="true">
             {String(index + 1).padStart(2, "0")}
           </span>
         ) : (
-          <span className="font-mono text-xs text-cobalt" aria-hidden="true">
+          <span className="meta-text text-cobalt" aria-hidden="true">
             {tutorial.category.name}
           </span>
         )}
@@ -37,9 +37,10 @@ export function TutorialCard({
             {tutorial.title}
           </h3>
           <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted">{tutorial.summary}</p>
-          <p className="mt-3 font-mono text-[0.72rem] text-muted">
+          <p className="meta-text mt-3 text-muted">
             {formatCount(tutorial.chapter_count, "chapter")} ·{" "}
-            {formatReadingTime(tutorial.estimated_reading_time)}
+            {formatReadingTime(tutorial.estimated_reading_time)} · Published{" "}
+            <time dateTime={tutorial.published_at}>{formatDate(tutorial.published_at)}</time>
           </p>
         </div>
 

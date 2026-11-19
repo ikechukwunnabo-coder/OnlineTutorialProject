@@ -19,7 +19,7 @@ export function CategoryCard({ category, index }: { category: CategoryCardData; 
         <span className="grid size-11 place-items-center border-2 border-ink bg-mint text-ink">
           <CategoryIcon name={category.icon} className="size-6" />
         </span>
-        <span className="font-mono text-xs text-muted" aria-hidden="true">
+        <span className="meta-text text-muted" aria-hidden="true">
           {String(index + 1).padStart(2, "0")}
         </span>
       </div>
@@ -27,7 +27,7 @@ export function CategoryCard({ category, index }: { category: CategoryCardData; 
         {category.name}
       </h3>
       <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">{category.description}</p>
-      <p className="mt-6 flex items-center justify-between border-t border-line pt-3 font-mono text-[0.72rem] text-muted">
+      <p className="mt-6 flex items-center justify-between border-t border-line pt-3 meta-text text-muted">
         {typeof category.tutorial_count === "number"
           ? formatCount(category.tutorial_count, "tutorial")
           : "Explore the path"}

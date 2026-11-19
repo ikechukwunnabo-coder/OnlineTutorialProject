@@ -1,6 +1,7 @@
 # R1 Release Gate - Ben Digital Solution
 
 **Gate date:** 2026-11-18
+**Update:** 2026-11-19 — the semantic UI/UX redesign was verified locally with typecheck, lint, Vitest, and a production build; no criterion status changed.
 **Status:** **NOT PASSED**
 **Reason:** Production deployment was not executed; AC-21 remains unsatisfied; seven criteria remain partial. AC-30 is implemented and AC-25 passed on GitHub Actions.
 
@@ -13,13 +14,13 @@ This is the Phase 7 evidence table. It records what was actually run in this wor
 | Host | Windows, local workspace |
 | Backend tests | Python 3.14.8, SQLite + LocMem cache; current local suite includes console CRUD tests |
 | Database drill | Local PostgreSQL 17.0, scratch databases `bds_r1_phase7` and `bds_r1_phase7_restore` |
-| Frontend checks | Node 26.13.1 via `fnm`, Next.js 16.4.6 |
-| Production frontend build | `next build` with console routes included; earlier standalone build used `API_INTERNAL_URL=http://127.0.0.1:8010/api/v1` |
+| Frontend checks | Node 26.13.1 via `fnm`, Next.js 16.4.6; latest local checks include the semantic UI/UX redesign |
+| Production frontend build | `next build` with console routes and the redesigned public/learner/console UI included; earlier standalone build used `API_INTERNAL_URL=http://127.0.0.1:8010/api/v1` |
 | Docker | CLI present; daemon unavailable; Compose stack not started |
 | PostgreSQL 18.7 / Redis 8.4.8 | Not available locally |
-| GitHub Actions | Executed: run `44268233115` on commit `bf20bd9`; backend, frontend, and secret-scan jobs passed. This predates the console follow-up, which is verified locally only. |
+| GitHub Actions | Executed: run `44268233115` on commit `bf20bd9`; backend, frontend, and secret-scan jobs passed. This predates the console follow-up and the UI/UX redesign, which are verified locally only. |
 | Live email | Not executed; LocMem/console only |
-| Git | Committed and pushed to `origin/main`; CI validated the pushed workflow fix |
+| Git | R1 implementation and console follow-up are committed and pushed to `origin/main`; the UI/UX redesign is included in the commit that updates these records |
 
 ## 2. Phase 7 checks
 
@@ -39,7 +40,8 @@ This is the Phase 7 evidence table. It records what was actually run in this wor
 | Frontend typecheck | PASS | `tsc --noEmit` clean |
 | Frontend lint | PASS | `eslint .` clean |
 | Frontend unit/component tests | PASS | **26 passed in 8 files** |
-| Frontend production build | PASS | Build passed with console routes included; 20 static pages generated in the latest run; earlier standalone output at `.next/standalone/server.js` |
+| UI/UX redesign static checks | PASS | After the redesign, `tsc --noEmit` and `eslint .` were clean; Vitest passed 26 tests in 8 files with `--pool=threads` after the configured fork pool repeatedly timed out on this Windows host; no tested label or `next` href changed |
+| Frontend production build | PASS | Build passed with console routes and the redesigned UI included; 20 static pages generated in the latest run; earlier standalone output at `.next/standalone/server.js` |
 | Frontend production dependency audit | PASS | `npm audit --omit=dev` found 0 vulnerabilities |
 | Frontend full audit | PARTIAL | `npm audit --package-lock-only` reports **18 vulnerabilities (6 moderate, 12 high)** in dev tooling; fixing requires breaking changes |
 | Secret scan | PASS (repo) | Pattern scan found only placeholder values in `.env.example` and `.env.prod.example`; images were not built |
@@ -77,7 +79,7 @@ This is the Phase 7 evidence table. It records what was actually run in this wor
 | AC-17 | PASS | Slug redirect and canonical backend tests |
 | AC-18 | PASS | Contact validation, throttle, storage, email, and header-injection tests |
 | AC-19 | PASS | About/Privacy/Terms/404/error Playwright coverage |
-| AC-20 | PARTIAL | axe WCAG A/AA 9/9 passed; manual keyboard, screen-reader, and visual review incomplete |
+| AC-20 | PARTIAL | axe WCAG A/AA 9/9 passed before the UI redesign; semantic tokens, dark mode, labelled forms, visible focus, accessible mobile menu, and inline delete confirmation were added, but axe and manual keyboard/screen-reader/visual review have not been rerun on the redesigned UI |
 | AC-21 | **FAIL** | p75 mobile LCP not measured; warm 340ms is not p75 evidence |
 | AC-22 | PASS | `check --deploy` clean; production dependency audits clean; dev-toolchain findings documented |
 | AC-23 | PASS | Health/readiness checks passed; email failure logging tested |
@@ -97,7 +99,7 @@ This is the Phase 7 evidence table. It records what was actually run in this wor
 
 1. **Production environment evidence:** build and run the Compose stack on a Linux host; verify PostgreSQL 18.7, Redis 8.4.8, Nginx TLS, health checks, security headers, memory use, and `/console` role routing.
 2. **AC-21:** measure p75 mobile LCP on chapter pages with documented device/network conditions.
-3. **Manual accessibility/visual QA:** keyboard, screen-reader, contrast, and screenshot review.
+3. **Manual accessibility/visual QA:** keyboard, screen-reader, contrast, and screenshot review across the redesigned public, learner, and console surfaces; rerun axe after the UI changes.
 4. **Live email:** verify registration, verification, reset, and contact delivery with the chosen provider.
 5. **AC-24 production parity:** repeat the restore drill against PostgreSQL 18.7 and the production media volume.
 6. **AC-31:** wire frontend error tracking or explicitly accept backend-only observability.
@@ -120,4 +122,4 @@ Phase 7 is stopped at the gate. The next action requires an owner decision:
 - **next:** proceed to R2 only if the owner explicitly accepts the R1 gate exceptions; otherwise R1 remains blocked.
 - **status:** request a current evidence summary.
 
-No production deployment has been claimed. The R1 implementation is committed and pushed to GitHub; CI passed on the pushed workflow fix.
+No production deployment has been claimed. The R1 implementation, console follow-up, and UI redesign are committed and pushed with this gate update; the latest CI rerun remains pending.

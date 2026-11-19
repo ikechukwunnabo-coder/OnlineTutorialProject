@@ -1,6 +1,6 @@
 # Test Strategy — Ben Digital Solution
 
-**Last updated:** 2026-11-18 (Phase 7)
+**Last updated:** 2026-11-19 (Phase 7 UI/UX redesign follow-up)
 **Scope:** R1 backend foundation, auth/account API, Next.js public/auth frontend, learner features, the `/console` editorial workflow, and Playwright/axe/performance checks. Production hardening is added in Phase 7.
 
 ## 1. Principles
@@ -331,3 +331,20 @@ The following results supersede the historical Phase 7 counts for local code sta
 | Frontend date-time formatting additions | 2 |
 
 Production Compose/Nginx/TLS, PostgreSQL 18.7, Redis 8.4.8, live email, p75 LCP, manual accessibility/visual review, and console CRUD on the production stack remain unrun.
+
+## 13. UI/UX redesign evidence (2026-11-19)
+
+The semantic UI/UX redesign changed frontend presentation only: no backend files, API contracts, migrations, or dependency versions changed. The following results supersede only the frontend static/build evidence in Sections 10 and 12; historical backend results remain valid.
+
+| Check | Result |
+|---|---|
+| Installed frontend versions | Node-based package metadata check: next 16.4.6, react/react-dom 19.3.0, tailwindcss 4.3.3, typescript 5.9.3, vitest 5.1.0, @playwright/test 1.65.1, zod 4.6.7, react-hook-form 7.92.0 |
+| Frontend `tsc --noEmit` | Clean |
+| Frontend `eslint .` | Clean after removing render-time ref access from console forms |
+| Frontend Vitest | The configured fork pool repeatedly timed out waiting for a worker on this Windows host; `vitest run --pool=threads` passed **26 tests in 8 files**, so `vitest.config.mts` is unchanged |
+| Frontend `next build` | Passed on rerun with the redesigned public, learner, and console UI; the first shell wrapper timed out after producing output, so the 900000 ms rerun is the recorded result |
+| Backend suite | Not rerun; no backend files changed; prior result remains 176 passed at 93.37% coverage |
+| Playwright/axe/Lighthouse | **Not rerun** after the redesign |
+| CI/GitHub Actions | Run `44268233115` predates this redesign; rerun required on the pushed commit |
+
+The redesign preserved the tested strings `Search tutorials, chapters, and categories`, `Copy code`, `Copied`, `Copy failed`, and `Keep your place in this chapter.`, plus the `/login?next=/tutorials/html/intro` href. New semantic tokens, UI primitives, dark-mode support, and console table/form patterns are documented in ADR-0012. Manual keyboard, screen-reader, visual, and p75 LCP checks remain open, so AC-20 and AC-21 statuses are unchanged.

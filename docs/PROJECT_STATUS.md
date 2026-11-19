@@ -1,7 +1,7 @@
 # Project Status — Ben Digital Solution
 
-**Last updated:** 2026-11-18
-**Current phase:** Phase 7 - R1 hardening and production deployment (local evidence complete, including the `/console` editorial workflow; CI passed on an earlier commit; gate NOT PASSED)
+**Last updated:** 2026-11-19
+**Current phase:** Phase 7 - R1 hardening and production deployment (local evidence complete, including the `/console` editorial workflow and the UI/UX redesign; CI passed on an earlier commit; gate NOT PASSED)
 **Next phase:** Owner decision on remaining R1 blockers and exceptions
 **Tooling mode:** Agentic (files and commands executable in this workspace)
 **Web access:** Yes (version checks performed 2026-11-12)
@@ -41,7 +41,7 @@ This is the single living status document. Phase completion records are appended
 | 4 — Backend authentication and accounts | Complete (approved 2026-11-15) | 13 auth/account endpoints, 131 tests at 93.61% coverage on SQLite and 93.34% on PostgreSQL 17.0, OpenAPI validation, session/CSRF/throttle tests |
 | 5 — Frontend foundation, public pages, and auth screens | Complete (awaiting approval) | Next.js 16.4.6 app, typed API client, public pages, auth screens/session restoration, 18 Vitest tests, lint/typecheck/build gates, live dev proxy checks |
 | 6 - Frontend learner features and E2E | Complete (advanced 2026-11-18) | Learner bookmark/progress UI, dashboard, Playwright R1 suite (17 passed, 1 opt-in skipped), axe 9/9, production build 49 pages, live revalidation webhook verified, backend 133 tests at 93.43% |
-| 7 - R1 hardening and production deployment | In progress - gate NOT PASSED | Production assets, AC-30, and the `/console` editorial workflow are complete locally; 24/32 criteria pass, 7 partial, 1 fail (AC-21); CI passed on an earlier commit; Docker/PG18.7/Redis8.4.8/live email unexecuted. See `docs/R1_GATE.md` |
+| 7 - R1 hardening and production deployment | In progress - gate NOT PASSED | Production assets, AC-30, the `/console` editorial workflow, and the semantic UI/UX redesign are complete locally; 24/32 criteria pass, 7 partial, 1 fail (AC-21); CI passed on an earlier commit that predates the console and UI follow-ups; Docker/PG18.7/Redis8.4.8/live email unexecuted. See `docs/R1_GATE.md` |
 | 8a–8d — R2 build | Not started (blocked until R1 live) | — |
 | 9 — R2 release gate | Not started | — |
 | 10 — R3 build | Not started (blocked until R2 live) | — |
@@ -64,6 +64,7 @@ All Phase 1 decisions are recorded as numbered ADRs under `docs/decisions/` (ind
 | ADR-0009 | Deployment topology | Single domain; Nginx routes `/api/` and `/admin/` to Django, `/` to Next.js; no CORS in production | Accepted |
 | ADR-0010 | API versioning and errors | `/api/v1/`, consistent error envelope with stable codes and request IDs, documented deprecation policy | Accepted |
 | ADR-0011 | Next.js editorial console | Role-gated `/console` content CRUD over the console API; Django admin retained for users/settings/media; ADR-0009 routing extended with `/console/*` | Accepted |
+| ADR-0012 | Semantic, token-based UI design system | CSS custom properties, reusable semantic classes, and small typed React primitives across public/learner/console surfaces; no new dependencies or API changes | Accepted |
 
 Phase 0 open items now closed: Redis inclusion (ADR-0002), Celery timing (ADR-0003), hierarchy (ADR-0004), revision strategy (ADR-0006), demo flag (ADR-0007). TypeScript selection was decided early in ADR-0008; the exact 5.9.x patch is pinned in Phase 5.
 
@@ -294,17 +295,19 @@ mypy was pinned to 1.19.1 because django-stubs 5.2.9 does not support the mypy 2
 
 ### 9.3 Frontend packages
 
-| Package | Pin | Rationale |
+Installed versions were rechecked on 2026-11-19 from `frontend/node_modules`; they supersede the earlier registry forecast where it differed from the actual lockfile state.
+
+| Package | Installed version | Rationale |
 |---|---|---|
 | next | 16.4.6 | Latest stable; 16.4.5 is the minimum security-safe floor (November 2026 advisories) |
-| react / react-dom | 19.3.1 | Current stable supported by Next.js 16 |
-| tailwindcss | 4.3.5 | Current stable |
-| @tanstack/react-query | 5.107.1 | Only where client-side fetching is needed |
+| react / react-dom | 19.3.0 | Installed version supported by Next.js 16; typecheck, tests, and build pass |
+| tailwindcss | 4.3.3 | Installed version; design-system tokens are authored in `globals.css` |
+| @tanstack/react-query | Not installed | Removed from the active toolchain; typed server/browser fetch functions are used instead |
 | zod | 4.6.7 | Form and payload validation |
 | react-hook-form | 7.92.0 | Forms |
 | vitest | 5.1.0 | Frontend unit tests |
-| @playwright/test | 1.65.0 | E2E and accessibility checks |
-| typescript | 5.9.x (exact pin in Phase 5) | TypeScript 7.0.2 is current but adoption is deferred until Next.js compatibility is verified (ADR-0008) |
+| @playwright/test | 1.65.1 | E2E and accessibility checks |
+| typescript | 5.9.3 | Installed version; TypeScript 7.0.2 is current but adoption is deferred until Next.js compatibility is verified (ADR-0008) |
 
 ### 9.4 Verification notes
 
@@ -1420,3 +1423,87 @@ Prepare the R1 production deployment: single-domain Nginx/TLS topology, producti
 ### 24.8 Next action
 
 Commit and push the console follow-up, then rerun CI on the new commit before requesting any further owner decision about the remaining R1 exceptions.
+
+---
+
+## 25. Phase 7 follow-up — UI/UX redesign (2026-11-19)
+
+### 25.1 Objective and scope
+
+Redesign the actual Next.js application using the repository-specific brief in `UI_UX.md`: audit first, then implement a content-first public site, a clearer chapter-reading experience, and a consistent editorial console. The redesign preserves the R1 API contract, server rendering, authentication, DRF permissions, content models, metadata, and tested interaction labels.
+
+### 25.2 Delivered items
+
+1. Added semantic colour, surface, border, focus, status, and console tokens in `frontend/src/app/globals.css`, with light/dark palettes selected by `prefers-color-scheme` and `colorScheme: "light dark"` in the root layout.
+2. Added reusable `PageHeader`, `SectionHeading`, `StatusBadge`, `Notice`, `ConsoleDataTable`, and `VideoEmbed` primitives.
+3. Unified navigation with active public routes, an accessible mobile menu, a persistent learning CTA, and consistent footer/loading/error surfaces.
+4. Redesigned the homepage around real catalog data and beginner-oriented sections: featured tutorials, categories, latest chapters, learning process, FAQ, and final CTA; no fabricated statistics or social proof were added.
+5. Redesigned tutorial discovery, categories, category detail, search, and static pages with consistent page headers, filters, active filter chips, publication dates, and empty/notice states.
+6. Redesigned tutorial overview and chapter pages with real tutorial progress, compact chapter rails, semantic article styling, labelled code windows, optional click-to-play video embeds, and preserved previous/next controls.
+7. Redesigned the console dashboard, content ledger, forms, and loading/error states; forms now use fieldsets, required markers, hints, inline field errors, error summaries, and success notices.
+8. Replaced native `window.confirm` deletion with an inline console confirmation step while preserving role-aware delete affordances.
+9. Preserved existing test strings, login `next` hrefs, API calls, SlugRedirect behaviour, SEO metadata, and backend permission boundaries.
+10. Introduced no new dependencies, migrations, endpoints, or client-side fetch framework.
+
+### 25.3 Files created or modified
+
+| Action | Path |
+|---|---|
+| Added | `UI_UX.md` (repository-specific redesign brief) |
+| Created | `docs/decisions/0012-semantic-ui-design-system.md` |
+| Created | `frontend/src/components/ui/page-header.tsx`, `section-heading.tsx`, `status-badge.tsx`, `notice.tsx`, `console-data-table.tsx` |
+| Created | `frontend/src/components/video-embed.tsx` |
+| Modified | `frontend/src/app/globals.css`, `frontend/src/app/layout.tsx`, `frontend/src/app/page.tsx`, `frontend/src/app/loading.tsx`, shared public/auth/learner/console pages and components |
+| Modified | `docs/PROJECT_STATUS.md`, `docs/R1_GATE.md`, `docs/TEST_STRATEGY.md`, `docs/RISK_REGISTER.md`, `docs/RUNBOOK.md`, `docs/decisions/README.md` |
+
+The generic, non-project-specific `ui-ux.md` prompt is not part of this change.
+
+### 25.4 Decisions and reasons
+
+| Decision | Reason |
+|---|---|
+| Semantic tokens and classes instead of a component library | No new dependency; one visual language can be applied to existing server components quickly |
+| Small typed primitives instead of large abstractions | Reuses existing component style while removing repeated page-header, table, badge, and notice markup |
+| Real API data on every redesigned surface | Preserves the content-first principle and avoids fabricated counts or social proof |
+| Preserve tested labels and `next` hrefs | Avoids breaking existing component/E2E contracts during a visual change |
+| Console rail remains visually distinct | Keeps editorial work clearly separated from the public learning site without a new origin |
+| Frontend role checks remain UX only | DRF permissions remain the security boundary (ADR-0011) |
+| No R2 features added | Quizzes, certificates, comments, and discussion were deliberately excluded |
+
+### 25.5 Commands run and actual outcomes
+
+Commands used the installed Node 26.13.1 binary at `C:\Users\SOLUTION\AppData\Roaming\fnm\node-versions\v26.13.1\installation\node.exe`.
+
+| Command | Outcome |
+|---|---|
+| `$node -p "require(...).version"` for frontend packages | next 16.4.6, react/react-dom 19.3.0, tailwindcss 4.3.3, typescript 5.9.3, vitest 5.1.0, @playwright/test 1.65.1, zod 4.6.7, react-hook-form 7.92.0 |
+| `tsc --noEmit` | Clean |
+| `eslint .` | Clean after removing render-time ref access from console forms |
+| `vitest run` / `vitest run --pool=threads` | The configured fork pool repeatedly timed out waiting for a worker on this Windows host; the same suite passed **26 tests in 8 files** with `--pool=threads`, so the committed Vitest config is unchanged |
+| `next build` | Clean on rerun; the first shell wrapper timed out after producing output, so the 900000 ms rerun is the recorded result |
+| Backend test suite | Not rerun: no backend files changed in this follow-up; prior evidence remains 176 passed at 93.37% coverage |
+
+### 25.6 Tests run and actual outcomes
+
+- Frontend typecheck, lint, component tests, and production build all pass on the redesigned code.
+- Existing frontend test count remains 26 tests in 8 files; no test strings or hrefs were changed.
+- Playwright, axe, Lighthouse, production Compose, live email, and CI were not rerun after the redesign.
+- The R1 criterion counts remain unchanged at 24 PASS, 7 PARTIAL, 1 FAIL; no new gate evidence was claimed.
+
+### 25.7 Known limitations and risks
+
+- The R1 gate remains **NOT PASSED**: AC-21 still fails and seven criteria remain partial.
+- The redesign changed many rendered layouts after the last axe and manual accessibility checks; AC-20 stays PARTIAL until keyboard, screen-reader, contrast, and visual review cover the new UI.
+- GitHub Actions run `44268233115` predates both the console follow-up and this redesign; CI must rerun on the pushed commit.
+- p75 mobile LCP, production Compose/Nginx, PostgreSQL 18.7, Redis 8.4.8, and live email remain unverified.
+- Dark mode follows the operating-system preference; there is no user-visible theme toggle in R1.
+
+### 25.8 Changes to previously agreed architecture
+
+- ADR-0012 records the semantic design-system decision; no earlier ADR is superseded.
+- No API contract, URL scheme, content model, authentication flow, permission rule, or dependency changed.
+- `ui-ux.md` remains an unrelated generic prompt and was not adopted as project documentation.
+
+### 25.9 Next action
+
+Commit and push this follow-up, rerun CI on the pushed commit, then complete manual visual/accessibility review and p75 LCP measurement before requesting any owner decision about R1 exceptions.

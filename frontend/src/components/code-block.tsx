@@ -9,16 +9,18 @@ export async function CodeBlock({ example }: { example: CodeExample }) {
   return (
     <figure className="code-window my-8">
       <figcaption className="code-window-bar">
-        <span className="flex items-center gap-2">
+        <span className="flex min-w-0 items-center gap-2">
           <span className="code-dots" aria-hidden="true">
             <span />
             <span />
             <span />
           </span>
-          <span>{example.title || "Example"}</span>
+          <span className="truncate font-bold text-code-text">
+            {example.title || "Example"}
+          </span>
         </span>
-        <span className="flex items-center gap-2">
-          <span className="text-[0.68rem] uppercase tracking-[0.12em] text-[#9fb9ad]">
+        <span className="flex shrink-0 items-center gap-3">
+          <span className="meta-text uppercase tracking-[0.12em] text-code-muted">
             {example.language}
           </span>
           <CopyButton text={example.source} />
@@ -26,18 +28,16 @@ export async function CodeBlock({ example }: { example: CodeExample }) {
       </figcaption>
 
       <div
-        className="bg-[#0d1117]"
+        className="bg-[var(--code-bg)]"
         dangerouslySetInnerHTML={{ __html: highlighted }}
       />
 
       {example.expected_output ? (
-        <details className="border-t border-white/20">
-          <summary className="cursor-pointer px-4 py-2.5 font-mono text-[0.7rem] text-[#b8cec4] hover:text-white">
+        <details className="code-output">
+          <summary className="cursor-pointer px-4 py-2.5 hover:underline">
             Expected output
           </summary>
-          <pre className="overflow-x-auto border-t border-white/10 bg-[#07120d] px-4 py-3 font-mono text-[0.78rem] leading-relaxed text-[#d9f26a]">
-            {example.expected_output}
-          </pre>
+          <pre>{example.expected_output}</pre>
         </details>
       ) : null}
     </figure>

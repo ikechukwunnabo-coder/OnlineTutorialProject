@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
+import { Notice } from "@/components/ui/notice";
 import { deleteConsoleContent } from "@/lib/api/browser";
 
 type ContentKind = "categories" | "tutorials" | "chapters";
@@ -18,14 +19,11 @@ export function ConsoleDeleteButton({
 }) {
   const router = useRouter();
   const statusRef = useRef<HTMLDivElement>(null);
+  const [confirming, setConfirming] = useState(false);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
 
   async function handleDelete() {
-    if (!window.confirm(`Delete ${name}? This cannot be undone.`)) {
-      return;
-    }
-
     setPending(true);
     setMessage("");
     try {
@@ -41,12 +39,48 @@ export function ConsoleDeleteButton({
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <button type="button" className="button-secondary" onClick={handleDelete} disabled={pending}>
-        {pending ? "Deleting…" : "Delete record"}
-      </button>
+      {!confirming ? (
+        <button
+          type="button"
+          className="button-danger"
+          onClick={() => {
+            setConfirming(true);
+            setMessage("");
+          }}
+          disabled={pending}
+        >
+          Delete record
+        </button>
+      ) : (
+        <div className="w-full max-w-lg" role="group" aria-label={`Confirm deletion of ${name}`}>
+          <Notice tone="warning" title={`Delete ${name}?`}>
+            This cannot be undone.
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="button-danger text-sm"
+                onClick={handleDelete}
+                disabled={pending}
+              >
+                {pending ? "Deleting…" : "Delete permanently"}
+              </button>
+              <button
+                type="button"
+                className="button-secondary text-sm"
+                onClick={() => setConfirming(false)}
+                disabled={pending}
+              >
+                Keep record
+              </button>
+            </div>
+          </Notice>
+        </div>
+      )}
       {message ? (
-        <div ref={statusRef} tabIndex={-1} role="alert" className="alert-error">
-          {message}
+        <div ref={statusRef} tabIndex={-1} role="alert" className="w-full max-w-lg">
+          <Notice tone="error" role="alert" title="Deletion failed">
+            {message}
+          </Notice>
         </div>
       ) : null}
     </div>

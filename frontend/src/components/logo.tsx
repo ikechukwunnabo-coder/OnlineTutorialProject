@@ -19,7 +19,7 @@ export function Logo() {
           <span className="sm:hidden">{siteConfig.shortName}</span>
           <span className="hidden sm:inline">{siteConfig.name}</span>
         </span>
-        <span className="mt-1 hidden font-mono text-[0.65rem] text-muted sm:block">
+        <span className="mt-1 hidden meta-text text-muted sm:block">
           learn by making
         </span>
       </span>

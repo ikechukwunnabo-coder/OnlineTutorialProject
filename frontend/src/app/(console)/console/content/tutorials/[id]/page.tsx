@@ -53,7 +53,7 @@ export default async function EditConsoleTutorialPage({
 
   return (
     <section aria-labelledby="edit-tutorial-title" className="max-w-3xl">
-      <Link href="/console/content" className="font-mono text-xs text-cobalt underline underline-offset-4">
+      <Link href="/console/content" className="meta-text text-cobalt underline underline-offset-4">
         Back to content
       </Link>
       <div className="mt-6 border-l-4 border-coral pl-5">
@@ -61,7 +61,7 @@ export default async function EditConsoleTutorialPage({
         <h1 id="edit-tutorial-title" className="display-title mt-3 text-4xl">
           {tutorial.title}
         </h1>
-        <p className="mt-3 font-mono text-xs text-muted">
+        <p className="mt-3 meta-text text-muted">
           /{tutorial.slug} · {tutorial.estimated_reading_time} min read
         </p>
         <Link href={`/console/content/chapters/new?tutorial=${tutorial.id}`} className="button-secondary mt-5">

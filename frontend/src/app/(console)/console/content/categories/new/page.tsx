@@ -34,7 +34,7 @@ export default async function NewConsoleCategoryPage() {
 
   return (
     <section aria-labelledby="new-category-title" className="max-w-3xl">
-      <Link href="/console/content" className="font-mono text-xs text-cobalt underline underline-offset-4">
+      <Link href="/console/content" className="meta-text text-cobalt underline underline-offset-4">
         Back to content
       </Link>
       <div className="mt-6 border-l-4 border-coral pl-5">

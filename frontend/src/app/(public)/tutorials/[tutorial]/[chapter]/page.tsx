@@ -10,6 +10,7 @@ import { ChapterNavigation } from "@/components/chapter-navigation";
 import { CodeBlock } from "@/components/code-block";
 import { JsonLd } from "@/components/json-ld";
 import { TableOfContents } from "@/components/table-of-contents";
+import { VideoEmbed } from "@/components/video-embed";
 import { getAllTutorials, getChapter, getTutorial } from "@/lib/api/client";
 import type { ChapterDetail, TutorialDetail } from "@/lib/api/types";
 import { ApiError } from "@/lib/api/errors";
@@ -96,7 +97,7 @@ export default async function ChapterPage({
             <div className="flex flex-wrap items-center gap-2">
               <Link
                 href={`/tutorials/${tutorialSlug}`}
-                className="tag tag-cobalt no-underline hover:bg-lime hover:text-ink"
+                className="tag tag-cobalt no-underline hover:bg-lime hover:text-on-lime"
               >
                 {tutorialTitle}
               </Link>
@@ -113,8 +114,9 @@ export default async function ChapterPage({
               {chapterData.title}
             </h1>
             <p className="mt-4 max-w-3xl text-lg leading-relaxed text-muted">{chapterData.summary}</p>
-            <p className="mt-4 font-mono text-xs text-muted">
-              Updated {formatDate(chapterData.updated_at)}
+            <p className="meta-text mt-4 text-muted">
+              Updated {formatDate(chapterData.updated_at)} ·{" "}
+              {chapterData.progress?.completed ? "Marked complete" : "Reading"}
             </p>
           </div>
         </div>
@@ -122,7 +124,7 @@ export default async function ChapterPage({
 
       <div className="container-page py-10 lg:py-14">
         {tutorialData ? (
-          <details className="mb-6 border-2 border-ink bg-paper-raised p-4 lg:hidden">
+          <details className="surface mb-6 p-4 lg:hidden">
             <summary className="cursor-pointer font-display text-lg font-bold">
               Chapters in this tutorial
             </summary>
@@ -133,7 +135,7 @@ export default async function ChapterPage({
         ) : null}
 
         {chapterData.toc.length > 0 ? (
-          <details className="mb-6 border-2 border-ink bg-paper-raised p-4 lg:hidden">
+          <details className="surface mb-6 p-4 lg:hidden">
             <summary className="cursor-pointer font-display text-lg font-bold">On this page</summary>
             <div className="mt-4">
               <TableOfContents items={chapterData.toc} />
@@ -153,12 +155,6 @@ export default async function ChapterPage({
           )}
 
           <article aria-labelledby="chapter-title" className="min-w-0">
-            <ChapterLearningControls
-              chapterId={chapterData.id}
-              tutorialSlug={tutorialSlug}
-              chapterSlug={chapterSlug}
-            />
-
             <div
               id="chapter-reading"
               className="prose-lesson mt-8"
@@ -199,19 +195,11 @@ export default async function ChapterPage({
                   Video for this chapter.
                 </h2>
                 {chapterData.video_embeds.map((video) => (
-                  <figure key={`${video.order}-${video.embed_url}`} className="mt-6">
-                    <div className="aspect-video w-full overflow-hidden border-2 border-ink">
-                      <iframe
-                        src={video.embed_url}
-                        title={video.title}
-                        className="h-full w-full"
-                        loading="lazy"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    </div>
-                    <figcaption className="mt-2 text-sm text-muted">{video.title}</figcaption>
-                  </figure>
+                  <VideoEmbed
+                    key={`${video.order}-${video.embed_url}`}
+                    url={video.embed_url}
+                    title={video.title}
+                  />
                 ))}
               </section>
             ) : null}
@@ -245,6 +233,12 @@ export default async function ChapterPage({
                 .
               </p>
             </div>
+
+            <ChapterLearningControls
+              chapterId={chapterData.id}
+              tutorialSlug={tutorialSlug}
+              chapterSlug={chapterSlug}
+            />
 
             <ChapterNavigation
               previous={chapterData.navigation.previous}

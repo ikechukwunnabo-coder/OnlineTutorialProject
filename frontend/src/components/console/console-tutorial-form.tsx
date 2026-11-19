@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { ConsoleDeleteButton } from "@/components/console/console-delete-button";
+import { Notice } from "@/components/ui/notice";
 import { createConsoleTutorial, updateConsoleTutorial } from "@/lib/api/browser";
 import { ApiError, fieldErrors } from "@/lib/api/errors";
 import type { ConsoleTutorial, ConsoleTutorialInput } from "@/lib/api/types";
@@ -35,6 +36,7 @@ export function ConsoleTutorialForm({
 }) {
   const router = useRouter();
   const [status, setStatus] = useState("");
+  const [formError, setFormError] = useState("");
   const {
     register,
     handleSubmit,
@@ -55,6 +57,7 @@ export function ConsoleTutorialForm({
 
   async function onSubmit(values: TutorialValues) {
     setStatus("");
+    setFormError("");
     const input: ConsoleTutorialInput = {
       category: values.category,
       title: values.title,
@@ -75,7 +78,9 @@ export function ConsoleTutorialForm({
       router.push("/console/content");
       router.refresh();
     } catch (error) {
-      setStatus(error instanceof ApiError ? error.message : "The tutorial could not be saved.");
+      const message =
+        error instanceof ApiError ? error.message : "The tutorial could not be saved.";
+      setFormError(message);
       for (const [field, message] of Object.entries(fieldErrors(error))) {
         if (field in values) {
           setError(field as keyof TutorialValues, { message });
@@ -86,97 +91,157 @@ export function ConsoleTutorialForm({
 
   if (categories.length === 0) {
     return (
-      <div className="mt-8 border-l-4 border-coral bg-[#fff0ea] px-5 py-4">
-        <p className="font-mono text-xs text-coral-text">No categories yet</p>
-        <p className="mt-1 text-sm">
+      <div className="mt-8">
+        <Notice tone="warning" title="No categories yet" role="status">
           Create a category before drafting a tutorial.
-        </p>
-        <Link href="/console/content/categories/new" className="button-primary mt-4">
-          Create category
-        </Link>
+          <Link href="/console/content/categories/new" className="button-primary mt-4">
+            Create category
+          </Link>
+        </Notice>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-8 space-y-6">
-      <div className="grid gap-5 sm:grid-cols-2">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-8 space-y-8">
+      {formError ? (
         <div>
-          <label htmlFor="tutorial-title" className="field-label">
-            Title
-          </label>
-          <input id="tutorial-title" className="field-input" {...register("title")} />
-          {errors.title ? <p className="field-error">{errors.title.message}</p> : null}
+          <Notice tone="error" role="alert" title="This tutorial was not saved">
+            {formError}
+          </Notice>
         </div>
-        <div>
-          <label htmlFor="tutorial-slug" className="field-label">
-            Slug
-          </label>
-          <input id="tutorial-slug" className="field-input" {...register("slug")} />
-          {errors.slug ? <p className="field-error">{errors.slug.message}</p> : null}
-        </div>
-      </div>
+      ) : null}
 
-      <div>
-        <label htmlFor="tutorial-summary" className="field-label">
-          Summary
-        </label>
-        <textarea id="tutorial-summary" rows={3} className="field-input" {...register("summary")} />
-        {errors.summary ? <p className="field-error">{errors.summary.message}</p> : null}
-      </div>
-
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label htmlFor="tutorial-category" className="field-label">
-            Category
-          </label>
-          <select id="tutorial-category" className="field-input" {...register("category", { setValueAs: Number })}>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-          {errors.category ? <p className="field-error">{errors.category.message}</p> : null}
-        </div>
-        <div>
-          <label htmlFor="tutorial-difficulty" className="field-label">
-            Difficulty
-          </label>
-          <select id="tutorial-difficulty" className="field-input" {...register("difficulty")}>
-            <option value="beginner">Beginner</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="advanced">Advanced</option>
-          </select>
-        </div>
-      </div>
-
-      {canPublish ? (
-        <div className="grid gap-5 border-t border-line-strong pt-6 sm:grid-cols-2">
+      <fieldset className="form-section border-t-0 pt-0">
+        <legend className="font-display text-xl font-bold tracking-[-0.03em]">Basics</legend>
+        <div className="form-grid mt-4">
           <div>
-            <label htmlFor="tutorial-status" className="field-label">
-              Publication state
+            <label htmlFor="tutorial-title" className="field-label">
+              Title <span className="field-required">*</span>
+              <span className="sr-only"> required</span>
             </label>
-            <select id="tutorial-status" className="field-input" {...register("status")}>
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-              <option value="archived">Archived</option>
+            <input
+              id="tutorial-title"
+              className="field-input"
+              aria-invalid={errors.title ? true : undefined}
+              aria-describedby={errors.title ? "tutorial-title-error" : undefined}
+              {...register("title")}
+            />
+            {errors.title ? (
+              <p id="tutorial-title-error" className="field-error">
+                {errors.title.message}
+              </p>
+            ) : null}
+          </div>
+          <div>
+            <label htmlFor="tutorial-slug" className="field-label">
+              Slug
+            </label>
+            <input
+              id="tutorial-slug"
+              className="field-input"
+              aria-invalid={errors.slug ? true : undefined}
+              aria-describedby={errors.slug ? "tutorial-slug-error" : undefined}
+              {...register("slug")}
+            />
+            {errors.slug ? (
+              <p id="tutorial-slug-error" className="field-error">
+                {errors.slug.message}
+              </p>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="mt-5">
+          <label htmlFor="tutorial-summary" className="field-label">
+            Summary <span className="field-required">*</span>
+            <span className="sr-only"> required</span>
+          </label>
+          <textarea
+            id="tutorial-summary"
+            rows={3}
+            className="field-input"
+            aria-invalid={errors.summary ? true : undefined}
+            aria-describedby={errors.summary ? "tutorial-summary-error" : undefined}
+            {...register("summary")}
+          />
+          <p className="field-hint">This appears on cards and at the top of the tutorial page.</p>
+          {errors.summary ? (
+            <p id="tutorial-summary-error" className="field-error">
+              {errors.summary.message}
+            </p>
+          ) : null}
+        </div>
+      </fieldset>
+
+      <fieldset className="form-section">
+        <legend className="font-display text-xl font-bold tracking-[-0.03em]">
+          Placement and publication
+        </legend>
+        <div className="form-grid mt-4">
+          <div>
+            <label htmlFor="tutorial-category" className="field-label">
+              Category <span className="field-required">*</span>
+              <span className="sr-only"> required</span>
+            </label>
+            <select
+              id="tutorial-category"
+              className="field-input"
+              aria-invalid={errors.category ? true : undefined}
+              aria-describedby={errors.category ? "tutorial-category-error" : undefined}
+              {...register("category", { setValueAs: Number })}
+            >
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            {errors.category ? (
+              <p id="tutorial-category-error" className="field-error">
+                {errors.category.message}
+              </p>
+            ) : null}
+          </div>
+          <div>
+            <label htmlFor="tutorial-difficulty" className="field-label">
+              Difficulty
+            </label>
+            <select id="tutorial-difficulty" className="field-input" {...register("difficulty")}>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
             </select>
           </div>
-          <label className="flex items-center gap-3 self-end text-sm">
-            <input type="checkbox" className="size-4 accent-coral" {...register("is_demo")} />
-            Keep this tutorial hidden from readers
-          </label>
         </div>
-      ) : null}
+
+        {canPublish ? (
+          <div className="form-grid mt-5">
+            <div>
+              <label htmlFor="tutorial-status" className="field-label">
+                Publication state
+              </label>
+              <select id="tutorial-status" className="field-input" {...register("status")}>
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+            <label className="flex items-center gap-3 self-end text-sm">
+              <input type="checkbox" className="size-4 accent-coral" {...register("is_demo")} />
+              Keep this tutorial hidden from readers
+            </label>
+          </div>
+        ) : null}
+      </fieldset>
 
       {status ? (
-        <div role="status" className="alert-success">
+        <Notice tone="success" role="status" title="Saved">
           {status}
-        </div>
+        </Notice>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-4 border-t border-line-strong pt-6">
+      <div className="flex flex-wrap items-center gap-4 border-t border-line pt-6">
         <button type="submit" className="button-primary" disabled={isSubmitting}>
           {isSubmitting ? "Saving…" : tutorial ? "Save changes" : "Create tutorial"}
         </button>

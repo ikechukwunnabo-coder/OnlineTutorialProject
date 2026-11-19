@@ -50,7 +50,7 @@ export default function ContactPage() {
             </div>
 
             <div className="border border-line p-5">
-              <p className="font-mono text-xs text-cobalt">No account needed</p>
+              <p className="meta-text text-cobalt">No account needed</p>
               <p className="mt-2 text-sm leading-relaxed text-muted">
                 You can send a message without creating an account. Account features arrive in a
                 later phase.
@@ -58,15 +58,15 @@ export default function ContactPage() {
             </div>
 
             <div className="border border-line p-5">
-              <p className="font-mono text-xs text-cobalt">Looking for a lesson?</p>
+              <p className="meta-text text-cobalt">Looking for a lesson?</p>
               <p className="mt-2 text-sm leading-relaxed text-muted">
                 Browse the library or search by topic before sending a question.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <Link href="/tutorials" className="tag tag-cobalt no-underline hover:bg-lime hover:text-ink">
+                <Link href="/tutorials" className="tag tag-cobalt no-underline hover:bg-lime hover:text-on-lime">
                   Tutorials
                 </Link>
-                <Link href="/search" className="tag no-underline hover:bg-lime hover:text-ink">
+                <Link href="/search" className="tag no-underline hover:bg-lime hover:text-on-lime">
                   Search
                 </Link>
               </div>

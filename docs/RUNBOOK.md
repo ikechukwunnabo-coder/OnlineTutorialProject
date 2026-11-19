@@ -1,6 +1,6 @@
 # Production Runbook - Ben Digital Solution
 
-**Last updated:** 2026-11-18 (Phase 7, editorial console follow-up)
+**Last updated:** 2026-11-19 (Phase 7, UI/UX redesign follow-up)
 **Status:** Authored, not executed on a Linux/Docker production host. Treat every command as unverified until the Phase 7 gate is completed on the target VPS.
 
 ## 1. Scope
@@ -128,6 +128,7 @@ Also verify manually:
 - Response headers include HSTS, CSP, `X-Content-Type-Options`, and `Referrer-Policy`.
 - A chapter with an admin-uploaded image shows the validated alt text (empty only when marked decorative), and a saved YouTube/Vimeo embed loads under the allowlisted `frame-src` CSP.
 - `http://` redirects to `https://`.
+- On desktop, tablet, and mobile, the redesigned public/learner pages and `/console` remain usable with light and dark OS preferences; the mobile navigation menu is labelled and keyboard-operable.
 
 ## 5. Routine operations
 
@@ -252,7 +253,7 @@ The following are not verified in the current workspace:
 - PostgreSQL 18.7 and Redis 8.4.8 (local PostgreSQL is 17; local Redis is 3.0.504).
 - GitHub Actions CI execution.
 - Live transactional email delivery.
-- p75 mobile LCP and manual keyboard/screen-reader/visual review.
+- p75 mobile LCP and manual keyboard/screen-reader/visual review, including the redesigned UI and both OS colour schemes.
 - AC-30 image alt-text/type/size and allowlisted video embeds are implemented locally but not verified on the production Compose/Nginx stack.
 - Frontend Sentry is not wired.
 - Full `npm audit` reports dev-toolchain findings; production dependencies report none.

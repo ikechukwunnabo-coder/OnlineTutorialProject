@@ -13,7 +13,7 @@ export function ChapterIndex({
     <nav aria-label="Chapters in this tutorial">
       <Link
         href={`/tutorials/${tutorial.slug}`}
-        className="font-mono text-xs text-cobalt no-underline hover:underline"
+        className="meta-text text-cobalt no-underline hover:underline"
       >
         {tutorial.title}
       </Link>
@@ -31,7 +31,7 @@ export function ChapterIndex({
                     : "border-transparent text-muted hover:border-line-strong hover:text-cobalt"
                 }`}
               >
-                <span className="mr-1.5 font-mono text-[0.65rem] text-coral-text">
+                <span className="meta-text mr-1.5 text-coral-text">
                   {String(chapter.order).padStart(2, "0")}
                 </span>
                 {chapter.title}

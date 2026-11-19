@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { Notice } from "@/components/ui/notice";
+import { PageHeader } from "@/components/ui/page-header";
 import { pageMetadata } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
@@ -14,25 +16,29 @@ export const metadata = pageMetadata({
 export default function AboutPage() {
   return (
     <>
-      <section className="grid-paper border-b border-line">
-        <div className="container-page py-10 lg:py-14">
+      <PageHeader
+        eyebrow="About the library"
+        title="Programming should not feel like a locked door."
+        description={`${siteConfig.name} is a beginner-first teaching project. The goal is simple: explain the small steps clearly, show working examples, and give you room to practice without noise.`}
+        breadcrumbs={
           <Breadcrumbs
             items={[
               { name: "Home", path: "/" },
               { name: "About", path: "/about" },
             ]}
           />
-          <p className="eyebrow mt-8">About the library</p>
-          <h1 className="display-title mt-4 max-w-4xl text-5xl sm:text-6xl">
-            Programming should not feel like a locked door.
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
-            {siteConfig.name} is a beginner-first teaching project. The goal is simple: explain the
-            small steps clearly, show working examples, and give you room to practice without
-            noise.
-          </p>
-        </div>
-      </section>
+        }
+        actions={
+          <>
+            <Link href="/tutorials" className="button-primary">
+              Start learning
+            </Link>
+            <Link href="/contact" className="button-ghost">
+              Send a note
+            </Link>
+          </>
+        }
+      />
 
       <section className="container-page py-12 lg:py-16">
         <div className="grid gap-12 lg:grid-cols-[1fr_20rem]">
@@ -87,26 +93,29 @@ export default function AboutPage() {
           </div>
 
           <aside className="space-y-6">
-            <div className="border-2 border-ink bg-lime p-5 shadow-[4px_4px_0_0_var(--ink)]">
-              <p className="font-mono text-xs text-[#35420a]">The short version</p>
+            <div className="surface-strong bg-lime p-5 text-on-lime">
+              <p className="meta-text">The short version</p>
               <p className="mt-2 font-display text-2xl font-bold leading-tight tracking-[-0.04em]">
                 Read one chapter. Type the example. Change one thing.
               </p>
             </div>
-            <div className="border border-line p-5">
-              <p className="font-mono text-xs text-cobalt">Start here</p>
+            <Notice tone="info" title="Start here">
+              Choose a path from the catalog or go straight to a topic you need.
               <div className="mt-3 space-y-2 text-sm">
-                <Link href="/tutorials" className="block font-bold text-ink no-underline hover:text-cobalt">
-                  Browse tutorials →
+                <Link href="/tutorials" className="block font-bold text-cobalt no-underline hover:underline">
+                  Browse tutorials
                 </Link>
-                <Link href="/categories" className="block font-bold text-ink no-underline hover:text-cobalt">
-                  Browse categories →
-                </Link>
-                <Link href="/contact" className="block font-bold text-ink no-underline hover:text-cobalt">
-                  Contact the project →
+                <Link href="/categories" className="block font-bold text-cobalt no-underline hover:underline">
+                  Browse categories
                 </Link>
               </div>
-            </div>
+            </Notice>
+            <Notice tone="info" title="Found a mistake?">
+              <Link href="/contact" className="font-bold text-cobalt underline underline-offset-4">
+                Send a note
+              </Link>{" "}
+              with the chapter name.
+            </Notice>
           </aside>
         </div>
       </section>

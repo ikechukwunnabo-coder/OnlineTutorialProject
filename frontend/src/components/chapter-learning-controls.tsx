@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { Notice } from "@/components/ui/notice";
 import { ApiError } from "@/lib/api/errors";
 import {
   addBookmark,
@@ -203,59 +204,54 @@ export function ChapterLearningControls({
 
   if (status === "loading") {
     return (
-      <div
-        aria-busy="true"
-        className="mt-6 border-2 border-line-strong bg-paper-raised p-4 text-sm text-muted"
-      >
-        Loading your bookmarks and progress…
+      <div className="mt-8" aria-busy="true">
+        <Notice tone="info" role="status" title="Checking your learning state…">
+          Your saved bookmarks and progress will appear here.
+        </Notice>
       </div>
     );
   }
 
   if (status === "anonymous") {
     return (
-      <div className="mt-6 border-2 border-ink bg-paper-raised p-4">
-        <p className="font-display text-lg font-bold tracking-[-0.03em]">
-          Keep your place in this chapter.
-        </p>
-        <p className="mt-1 text-sm text-muted">
+      <div className="mt-8">
+        <Notice tone="info" role="status" title="Keep your place in this chapter.">
           Log in to bookmark chapters, mark them complete, and save your reading position.
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Link
-            href={`/login?next=/tutorials/${tutorialSlug}/${chapterSlug}`}
-            className="button-primary text-sm"
-          >
-            Log in
-          </Link>
-          <Link href="/register" className="button-secondary text-sm">
-            Create an account
-          </Link>
-        </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Link
+              href={`/login?next=/tutorials/${tutorialSlug}/${chapterSlug}`}
+              className="button-primary text-sm"
+            >
+              Log in
+            </Link>
+            <Link href="/register" className="button-secondary text-sm">
+              Create an account
+            </Link>
+          </div>
+        </Notice>
       </div>
     );
   }
 
   if (status === "unverified") {
     return (
-      <div className="mt-6 border-2 border-coral bg-[#fff0ea] p-4">
-        <p className="font-display text-lg font-bold tracking-[-0.03em]">
-          Verify your email to save this chapter.
-        </p>
-        <p className="mt-1 text-sm text-muted">
+      <div className="mt-8">
+        <Notice tone="warning" role="status" title="Verify your email to save this chapter.">
           Bookmarks, completion, and reading position are available after email verification.
-        </p>
-        <Link href="/verify-email" className="button-secondary mt-3 text-sm">
-          Verify email
-        </Link>
+          <Link href="/verify-email" className="button-secondary mt-3 text-sm">
+            Verify email
+          </Link>
+        </Notice>
       </div>
     );
   }
 
   if (status === "error") {
     return (
-      <div className="mt-6 border-2 border-coral bg-[#fff0ea] p-4 text-sm">
-        Learning tools are unavailable right now. Refresh the page to try again.
+      <div className="mt-8">
+        <Notice tone="warning" role="alert" title="Learning tools are unavailable.">
+          Refresh the page to try again.
+        </Notice>
       </div>
     );
   }
@@ -263,7 +259,7 @@ export function ChapterLearningControls({
   return (
     <section
       aria-labelledby="learning-controls-title"
-      className="mt-6 border-2 border-ink bg-paper-raised p-4 shadow-[4px_4px_0_0_var(--ink)]"
+      className="surface-strong mt-8 p-4"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -331,7 +327,7 @@ export function ChapterLearningControls({
         {message}
       </p>
       {error ? (
-        <p role="alert" className="mt-1 text-sm text-[#9f3213]">
+        <p role="alert" className="mt-1 text-sm text-danger">
           {error}
         </p>
       ) : null}

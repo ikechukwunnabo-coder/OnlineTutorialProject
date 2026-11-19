@@ -108,7 +108,7 @@ export function AccountNav() {
         type="button"
         onClick={handleLogout}
         disabled={busy}
-        className="border border-line-strong px-2 py-1 font-mono text-[0.65rem] text-muted transition-colors hover:border-ink hover:text-ink disabled:opacity-50"
+        className="border border-line-strong px-2 py-1 meta-text text-muted transition-colors hover:border-ink hover:text-ink disabled:opacity-50"
       >
         {busy ? "…" : "Log out"}
       </button>

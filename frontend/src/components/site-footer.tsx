@@ -17,7 +17,7 @@ export function SiteFooter() {
         </div>
 
         <nav aria-label="Footer learning links">
-          <p className="font-mono text-xs text-cobalt">Learn</p>
+          <p className="meta-text text-cobalt">Learn</p>
           <ul className="mt-3 space-y-2 text-sm">
             <li>
               <Link href="/tutorials" className="text-ink no-underline hover:text-cobalt">
@@ -34,11 +34,16 @@ export function SiteFooter() {
                 Search the library
               </Link>
             </li>
+            <li>
+              <Link href="/#learning-path" className="text-ink no-underline hover:text-cobalt">
+                Learning path
+              </Link>
+            </li>
           </ul>
         </nav>
 
         <nav aria-label="Footer site links">
-          <p className="font-mono text-xs text-cobalt">Site</p>
+          <p className="meta-text text-cobalt">Site</p>
           <ul className="mt-3 space-y-2 text-sm">
             <li>
               <Link href="/about" className="text-ink no-underline hover:text-cobalt">

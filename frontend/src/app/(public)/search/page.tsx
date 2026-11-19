@@ -3,6 +3,8 @@ import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { Pagination } from "@/components/pagination";
 import { SearchForm } from "@/components/search-form";
+import { PageHeader } from "@/components/ui/page-header";
+import { SectionHeading } from "@/components/ui/section-heading";
 import { searchCatalog } from "@/lib/api/client";
 import type { SearchResults } from "@/lib/api/types";
 import { ApiError } from "@/lib/api/errors";
@@ -55,35 +57,37 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
 
   return (
     <>
-      <section className="grid-paper border-b border-line">
-        <div className="container-page py-14 lg:py-18">
-          <p className="eyebrow">Find a lesson</p>
-          <h1 className="display-title mt-4 max-w-3xl text-5xl sm:text-6xl">Search the library.</h1>
-          <p className="mt-4 max-w-2xl text-lg text-muted">
-            Search by topic, language, or chapter title. Results include tutorials, individual
-            chapters, and categories.
-          </p>
-          <div className="mt-8 max-w-3xl">
+      <PageHeader
+        eyebrow="Find a lesson"
+        title="Search the library."
+        description="Search by topic, language, or chapter title. Results include tutorials, individual chapters, and categories."
+        meta={
+          <div className="max-w-3xl">
             <SearchForm initialQuery={query} initialType={type} />
           </div>
-        </div>
-      </section>
+        }
+        actions={
+          <Link href="/tutorials" className="button-ghost">
+            Browse the catalog instead
+          </Link>
+        }
+      />
 
       <section className="container-page py-10 lg:py-14">
         {!hasQuery ? (
           <div className="grid gap-8 lg:grid-cols-[1fr_18rem]">
             <div>
-              <p className="eyebrow">Try a search</p>
-              <h2 className="display-title mt-3 text-3xl sm:text-4xl">Start with a word or phrase.</h2>
-              <p className="mt-3 max-w-2xl text-muted">
-                Short searches work best. Try a language, a concept, or the name of a chapter.
-              </p>
+              <SectionHeading
+                eyebrow="Try a search"
+                title="Start with a word or phrase."
+                description="Short searches work best. Try a language, a concept, or the name of a chapter."
+              />
               <div className="mt-6 flex flex-wrap gap-2">
                 {["HTML", "Python", "databases", "CSS", "SQL", "beginner"].map((term) => (
                   <Link
                     key={term}
                     href={`/search?q=${encodeURIComponent(term)}`}
-                    className="tag tag-cobalt no-underline hover:bg-lime hover:text-ink"
+                    className="tag tag-cobalt no-underline hover:bg-lime hover:text-on-lime"
                   >
                     {term}
                   </Link>
@@ -118,7 +122,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                   {formatCount(results.count, "result")}
                 </h2>
               </div>
-              <p className="font-mono text-xs text-muted">
+              <p className="meta-text text-muted">
                 Page {page} of {Math.max(1, Math.ceil(results.count / 10))}
               </p>
             </div>

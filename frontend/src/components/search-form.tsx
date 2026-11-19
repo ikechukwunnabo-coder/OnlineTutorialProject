@@ -22,6 +22,8 @@ export function SearchForm({
   initialType?: string;
 }) {
   const listboxId = useId();
+  const inputId = useId();
+  const typeId = useId();
   const [query, setQuery] = useState(initialQuery);
   const [type, setType] = useState(initialType);
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
@@ -96,7 +98,7 @@ export function SearchForm({
   return (
     <div onBlur={handleBlur}>
       <form action="/search" method="get" role="search" className="relative">
-        <label htmlFor="site-search" className="sr-only">
+        <label htmlFor={inputId} className="sr-only">
           Search tutorials, chapters, and categories
         </label>
         <div className="flex flex-col gap-2 border-2 border-ink bg-paper-raised p-2 shadow-[4px_4px_0_0_var(--ink)] sm:flex-row">
@@ -119,7 +121,7 @@ export function SearchForm({
             </span>
             <input
               ref={inputRef}
-              id="site-search"
+              id={inputId}
               name="q"
               type="search"
               value={query}
@@ -151,15 +153,15 @@ export function SearchForm({
             />
           </div>
 
-          <label htmlFor="search-type" className="sr-only">
+          <label htmlFor={typeId} className="sr-only">
             Search type
           </label>
           <select
-            id="search-type"
+            id={typeId}
             name="type"
             value={type}
             onChange={(event) => setType(event.target.value)}
-            className="border border-line-strong bg-paper px-2.5 py-2 text-sm text-ink"
+            className="field-input sm:w-36"
           >
             {searchTypes.map((item) => (
               <option key={item.value} value={item.value}>
@@ -175,7 +177,7 @@ export function SearchForm({
 
         {showSuggestions ? (
           <div className="absolute left-0 right-0 top-[calc(100%+0.55rem)] z-30 border-2 border-ink bg-paper-raised shadow-[5px_5px_0_0_var(--ink)]">
-            <p className="border-b border-line px-3 py-2 font-mono text-[0.68rem] text-muted">
+            <p className="meta-text border-b border-line px-3 py-2 text-muted">
               Suggestions
             </p>
             <ul id={listboxId} role="listbox" aria-label="Search suggestions">
@@ -191,11 +193,11 @@ export function SearchForm({
                     onClick={() => setOpen(false)}
                     onMouseEnter={() => setActiveIndex(index)}
                     className={`flex items-center justify-between gap-3 border-b border-line/60 px-3 py-2.5 text-sm no-underline last:border-b-0 ${
-                      index === activeIndex ? "bg-lime text-ink" : "text-ink hover:bg-paper"
+                      index === activeIndex ? "bg-lime text-on-lime" : "text-ink hover:bg-paper"
                     }`}
                   >
                     <span>{suggestion.title}</span>
-                    <span className="font-mono text-[0.65rem] text-muted">{suggestion.type}</span>
+                    <span className="meta-text text-muted">{suggestion.type}</span>
                   </Link>
                 </li>
               ))}

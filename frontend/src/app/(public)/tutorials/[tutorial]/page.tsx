@@ -7,6 +7,7 @@ import { CategoryIcon } from "@/components/category-icon";
 import { DifficultyBadge } from "@/components/difficulty-badge";
 import { EmptyState } from "@/components/empty-state";
 import { JsonLd } from "@/components/json-ld";
+import { Notice } from "@/components/ui/notice";
 import { getAllTutorials, getTutorial } from "@/lib/api/client";
 import type { TutorialDetail } from "@/lib/api/types";
 import { ApiError } from "@/lib/api/errors";
@@ -79,7 +80,7 @@ export default async function TutorialPage({
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href={`/categories/${tutorial.category.slug}`}
-                  className="tag tag-cobalt no-underline hover:bg-lime hover:text-ink"
+                  className="tag tag-cobalt no-underline hover:bg-lime hover:text-on-lime"
                 >
                   <CategoryIcon name="book" className="mr-1 size-3.5" />
                   {tutorial.category.name}
@@ -111,8 +112,8 @@ export default async function TutorialPage({
               ) : null}
             </div>
 
-            <aside className="border-2 border-ink bg-paper-raised p-5 shadow-[5px_5px_0_0_var(--ink)]">
-              <p className="font-mono text-xs text-cobalt">At a glance</p>
+            <aside className="surface-strong p-5">
+              <p className="meta-text text-cobalt">At a glance</p>
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex items-center justify-between gap-4 border-b border-line pb-2">
                   <dt className="text-muted">Level</dt>
@@ -132,9 +133,35 @@ export default async function TutorialPage({
                 </div>
               </dl>
 
+              {tutorial.progress ? (
+                <section className="mt-5 border-t border-line pt-4" aria-label="Your progress">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="meta-text text-cobalt">Your progress</p>
+                    <p className="meta-text text-muted">{tutorial.progress.percent}%</p>
+                  </div>
+                  <p className="mt-1 text-sm text-muted">
+                    {tutorial.progress.completed_chapters} of {tutorial.progress.total_chapters}{" "}
+                    chapters complete
+                  </p>
+                  <div
+                    role="progressbar"
+                    aria-label={`${tutorial.title} progress`}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={tutorial.progress.percent}
+                    className="mt-2 h-2 overflow-hidden border border-line-strong bg-paper"
+                  >
+                    <div
+                      className="h-full bg-cobalt transition-[width] duration-300"
+                      style={{ width: `${tutorial.progress.percent}%` }}
+                    />
+                  </div>
+                </section>
+              ) : null}
+
               {tutorial.tags.length > 0 ? (
                 <div className="mt-5 border-t border-line pt-4">
-                  <p className="font-mono text-xs text-cobalt">Topics</p>
+                  <p className="meta-text text-cobalt">Topics</p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {tutorial.tags.map((tag) => (
                       <span key={tag.slug} className="tag">
@@ -157,7 +184,7 @@ export default async function TutorialPage({
                 <p className="eyebrow">Contents</p>
                 <h2 className="display-title mt-3 text-3xl sm:text-4xl">Follow the sequence.</h2>
               </div>
-              <p className="font-mono text-xs text-muted">
+              <p className="meta-text text-muted">
                 {formatCount(tutorial.chapters.length, "chapter")}
               </p>
             </div>
@@ -170,7 +197,7 @@ export default async function TutorialPage({
                       href={`/tutorials/${tutorial.slug}/${chapter.slug}`}
                       className="group grid gap-3 py-5 no-underline transition-colors hover:bg-paper-raised sm:grid-cols-[2.7rem_1fr_auto] sm:gap-5"
                     >
-                      <span className="font-mono text-xs text-coral" aria-hidden="true">
+                      <span className="meta-text text-coral" aria-hidden="true">
                         {String(chapter.order).padStart(2, "0")}
                       </span>
                       <div>
@@ -179,7 +206,7 @@ export default async function TutorialPage({
                         </h3>
                         <p className="mt-1 text-sm leading-relaxed text-muted">{chapter.summary}</p>
                       </div>
-                      <span className="self-center font-mono text-[0.7rem] text-muted">
+                      <span className="meta-text self-center text-muted">
                         {formatReadingTime(chapter.estimated_reading_time)}
                       </span>
                     </Link>
@@ -202,15 +229,12 @@ export default async function TutorialPage({
           </div>
 
           <aside className="space-y-6">
-            <div className="border-l-4 border-coral bg-paper-raised p-5">
-              <p className="font-display text-lg font-bold tracking-[-0.03em]">How to use this tutorial</p>
-              <p className="mt-2 text-sm leading-relaxed text-muted">
-                Read the chapters in order. Type the examples into your own editor instead of
-                pasting them. Change one thing after each example and see what happens.
-              </p>
-            </div>
-            <div className="border border-line p-5">
-              <p className="font-mono text-xs text-cobalt">Author</p>
+            <Notice tone="warning" title="How to use this tutorial">
+              Read the chapters in order. Type the examples into your own editor instead of pasting
+              them. Change one thing after each example and see what happens.
+            </Notice>
+            <div className="surface p-5">
+              <p className="meta-text text-cobalt">Author</p>
               <p className="mt-2 font-display text-lg font-bold">{tutorial.author.display_name}</p>
               <p className="mt-1 text-sm text-muted">
                 Writing practical lessons for people who are starting from zero.
